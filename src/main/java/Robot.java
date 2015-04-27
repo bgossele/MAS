@@ -1,3 +1,5 @@
+
+
 import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
@@ -10,7 +12,7 @@ import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
-class Robot implements TickListener, MovingRoadUser {
+class Robot implements TickListener, WarehouseAgent {
   private final RandomGenerator rng;
   private Optional<CollisionGraphRoadModel> roadModel;
   private Optional<Point> destination;
@@ -60,5 +62,10 @@ class Robot implements TickListener, MovingRoadUser {
 
   @Override
   public void afterTick(TimeLapse timeLapse) {}
+
+@Override
+public boolean isPhysical() {
+	return true;
+}
 
 }
