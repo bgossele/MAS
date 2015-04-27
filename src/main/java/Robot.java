@@ -1,5 +1,3 @@
-
-
 import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
@@ -12,13 +10,13 @@ import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
-class AGVAgent implements TickListener, MovingRoadUser {
+class Robot implements TickListener, MovingRoadUser {
   private final RandomGenerator rng;
   private Optional<CollisionGraphRoadModel> roadModel;
   private Optional<Point> destination;
   private LinkedList<Point> path;
 
-  AGVAgent(RandomGenerator r) {
+  Robot(RandomGenerator r) {
     rng = r;
     roadModel = Optional.absent();
     destination = Optional.absent();
