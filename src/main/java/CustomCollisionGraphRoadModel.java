@@ -4,6 +4,7 @@ import static com.google.common.base.Verify.verify;
 import java.util.Collection;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
 
 import javax.measure.quantity.Duration;
 import javax.measure.quantity.Length;
@@ -340,6 +341,10 @@ public class CustomCollisionGraphRoadModel extends DynamicGraphRoadModel {
       }
       return new CustomCollisionGraphRoadModel(this, minConnectionLength);
     }
+  }
+  
+  public Collection<Point> getNeighbors(Point node) {
+	  return getGraph().getOutgoingConnections(node);
   }
 
   static class ModificationChecker implements Listener {
