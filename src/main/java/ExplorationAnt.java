@@ -1,8 +1,8 @@
-
 import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
+import com.github.rinde.rinsim.core.Simulator;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
@@ -16,8 +16,8 @@ import com.google.common.base.Optional;
 class ExplorationAnt implements TickListener, WarehouseAgent, CommUser {
 	private Optional<CustomCollisionGraphRoadModel> roadModel;
 	private Optional<Point> previousPosition;
- 	private Optional<Point> position;
- 	private Optional<Point> destination;
+	private Optional<Point> position;
+	private Optional<Point> destination;
 	private LinkedList<Point> path;
 	private Optional<CommDevice> device;
 
@@ -26,6 +26,15 @@ class ExplorationAnt implements TickListener, WarehouseAgent, CommUser {
 		previousPosition = Optional.absent();
 		position = Optional.of(start);
 		destination = Optional.absent();
+		path = new LinkedList<>();
+		device = Optional.absent();
+	}
+
+	ExplorationAnt(Point start, Point destination) {
+		roadModel = Optional.absent();
+		previousPosition = Optional.absent();
+		position = Optional.of(start);
+		this.destination = Optional.of(destination);
 		path = new LinkedList<>();
 		device = Optional.absent();
 	}
@@ -43,14 +52,21 @@ class ExplorationAnt implements TickListener, WarehouseAgent, CommUser {
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if(destination..equals(Optional.absent()) || destination.get().equals(roadModel.get().getPosition(this))
-		roadModel.get().getNeighbors(position);
-		if (!destination.isPresent()) {
-		}
-
-		roadModel.get().followPath(this, path, timeLapse);
-
-		if (roadModel.get().getPosition(this).equals(destination.get())) {
+		if (destination.equals(Optional.absent())
+				|| destination.get().equals(roadModel.get().getPosition(this))) {
+			destination = Optional.absent();
+			for (Point des : roadModel.get().getNeighbors(position.get())) {
+				if(des.equals(previousPosition.get())) {
+					continue;
+				} else if (destination.equals(Optional.absent())) {
+					destination = Optional.of(des);
+				} else{
+					ExplorationAnt ant = new ExplorationAnt(position.get(), des);
+					Warehouse.getSimulator().register(ant);
+				}
+			}
+		} else {
+			roadModel.get().moveTo(this, destination.get(), timeLapse);
 		}
 	}
 

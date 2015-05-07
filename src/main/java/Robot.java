@@ -3,6 +3,7 @@ import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
+import com.github.rinde.rinsim.core.Simulator;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
@@ -15,7 +16,7 @@ import com.google.common.base.Optional;
 
 class Robot implements TickListener, WarehouseAgent, CommUser {
 	private final RandomGenerator rng;
-	private Optional<CollisionGraphRoadModel> roadModel;
+	private Optional<CustomCollisionGraphRoadModel> roadModel;
 	private Optional<Point> destination;
 	private LinkedList<Point> path;
 	private Optional<CommDevice> device;
@@ -49,9 +50,16 @@ class Robot implements TickListener, WarehouseAgent, CommUser {
 		path = new LinkedList<>(roadModel.get().getShortestPathTo(this,
 				destination.get()));
 	}
+	
+	private boolean started = false;
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
+		if(started) {
+			ExplorationAnt ant = new ExplorationAnt(roadModel.get().getPosition(this));
+			Warehouse.getSimulator().register(ant);
+		}
+		
 		if (!destination.isPresent()) {
 			nextDestination();
 		}

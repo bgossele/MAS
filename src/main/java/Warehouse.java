@@ -25,6 +25,12 @@ import com.google.common.collect.Table;
 public final class Warehouse {
 
   private static final double VEHICLE_LENGTH = 2d;
+  
+  private static Simulator sim;
+  
+  public static Simulator getSimulator() {
+	  return sim;
+  }
 
   private Warehouse() {}
 
@@ -33,13 +39,13 @@ public final class Warehouse {
    */
   public static void main(String[] args) {
 
-    final Simulator sim = Simulator.builder()
-        .addModel(CollisionGraphRoadModel.builder(createSimpleGraph())
+    sim = Simulator.builder()
+        .addModel(CustomCollisionGraphRoadModel.builder(createSimpleGraph())
             .setVehicleLength(VEHICLE_LENGTH)
             .build())
         .build();
 
-    for (int i = 0; i < 20; i++) {
+    for (int i = 0; i < 1; i++) {
       sim.register(new Robot(sim.getRandomGenerator()));
     }
 
