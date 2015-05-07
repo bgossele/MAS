@@ -12,7 +12,6 @@ import com.github.rinde.rinsim.geom.Point;
 import com.github.rinde.rinsim.geom.TableGraph;
 import com.github.rinde.rinsim.ui.View;
 import com.github.rinde.rinsim.ui.renderers.AGVRenderer;
-import com.github.rinde.rinsim.ui.renderers.WarehouseRenderer;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
@@ -50,7 +49,7 @@ public final class Warehouse {
     }
 
     View.create(sim)
-        .with(WarehouseRenderer.builder()
+        .with(CustomWarehouseRenderer.builder()
             .setMargin(VEHICLE_LENGTH)
         )
         .with(AGVRenderer.builder()
