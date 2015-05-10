@@ -1,6 +1,8 @@
 package users;
 import java.util.LinkedList;
 
+import model.road.VirtualGraphRoadModel;
+
 import org.apache.commons.math3.random.RandomGenerator;
 
 import warehouse.Warehouse;
@@ -17,7 +19,7 @@ import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
 public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
-	private Optional<CollisionGraphRoadModel> roadModel;
+	private Optional<VirtualGraphRoadModel> roadModel;
 	private Optional<Point> previousPosition;
 	private Optional<Point> position;
 	private Optional<Point> destination;
@@ -43,11 +45,11 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 	}
 
 	@Override
-	public void initRoadUser(RoadModel model) {
-		roadModel = Optional.of((CollisionGraphRoadModel) model);
-		roadModel.get().addObjectAt(this, position.get());
+	public void initVirtualUser(VirtualGraphRoadModel model) {
+		// TODO Auto-generated method stub
+		
 	}
-
+	
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if (destination.equals(Optional.absent())
@@ -73,11 +75,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 	}
 
 	@Override
-	public boolean isPhysical() {
-		return false;
-	}
-
-	@Override
 	public Optional<Point> getPosition() {
 		if (roadModel.get().containsObject(this)) {
 			return Optional.of(roadModel.get().getPosition(this));
@@ -89,5 +86,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 	public void setCommDevice(CommDeviceBuilder builder) {
 		device = Optional.of(builder.build());
 	}
+
 
 }

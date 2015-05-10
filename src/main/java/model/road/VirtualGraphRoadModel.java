@@ -6,10 +6,6 @@ import static com.google.common.base.Verify.verify;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-import javax.measure.quantity.Length;
-import javax.measure.quantity.Velocity;
-import javax.measure.unit.Unit;
-
 import model.road.VirtualGraphRoadModel.Loc;
 
 import org.apache.commons.math3.random.RandomGenerator;
@@ -24,7 +20,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.VerifyException;
 
 
-//TODO Loc is een private classe onderaan. Ik heb de fout niet kunnen vinden. unimplemented methodes staan er al in maar worden niet herked.
 public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 
 	/**

@@ -2,6 +2,7 @@ package model.road;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verifyNotNull;
 
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -18,8 +19,7 @@ import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 
-public abstract class AbstractVirtualRoadModel<T> extends
-		GenericVirtualRoadModel {
+public abstract class AbstractVirtualRoadModel<T> extends GenericVirtualRoadModel {
 
 	/**
 	 * A mapping of {@link VirtualUser} to location.
@@ -98,7 +98,7 @@ public abstract class AbstractVirtualRoadModel<T> extends
 	    synchronized (objLocs) {
 	      copiedMap = new LinkedHashMap<>();
 	      copiedMap.putAll(objLocs);
-	      // it is save to release the lock now
+	      // it is safe to release the lock now
 	    }
 
 	    final Map<VirtualUser, Point> theMap = new LinkedHashMap<>();
@@ -130,15 +130,12 @@ public abstract class AbstractVirtualRoadModel<T> extends
 	    return Sets.filter(getObjects(), predicate);
 	  }
 
-	  @SuppressWarnings("unchecked")
 	  public <Y extends VirtualUser> Set<Y> getObjectsAt(VirtualUser virtualUser,
 	      Class<Y> type) {
 	    final Set<Y> result = new HashSet<>();
-	    //TODO SameLocation predicate afmaken zie private class onderaan deze klasse.
-//	    for (final VirtualUser ru : getObjects(new SameLocationPredicate(virtualUser,
-//	        type, self))) {
-//	      result.add((Y) ru);
-//	    }
+	    for (final VirtualUser ru : getObjects(new SameLocationPredicate(virtualUser, type, self))) {
+	      result.add((Y) ru);
+	    }
 	    return result;
 	  }
 
@@ -156,7 +153,7 @@ public abstract class AbstractVirtualRoadModel<T> extends
 	  public boolean doRegister(VirtualUser virtualUser) {
 	    LOGGER.info("register {}", virtualUser);
 	    //TODO VirtualUser methode moet VirtualRoadModel aanvaarden (zie VirtualRoadModel comment onderaan))
-	    //virtualUser.initRoadUser(self);
+	    virtualUser.initVirtualUser(self);
 	    return true;
 	  }
 
@@ -172,17 +169,19 @@ public abstract class AbstractVirtualRoadModel<T> extends
 	  }
 
 /*	 
- * TODO eerst VirtualRoadModel interface maken vergelijkbaar met RoadModel
- * private static class SameLocationPredicate implements Predicate<VirtualUser> {
+ * TODO eerst VirtualRoadModel interface maken vergelijkbaar met RoadModel => Check.
+ * Maar is dit wel nodig? VirtualUsers kunnen toch makkelijk op dezelfde locatie staan?
+ */
+ private static class SameLocationPredicate implements Predicate<VirtualUser> {
 		    private final VirtualUser reference;
-		    private final AbstractVirtualRoadModel<T> model;
+		    private final VirtualRoadModel model;
 		    private final Class<?> type;
 
 		    SameLocationPredicate(final VirtualUser pReference, final Class<?> pType,
-		        final RoadModel pModel) {
+		        final VirtualRoadModel vModel) {
 		      reference = pReference;
 		      type = pType;
-		      model = pModel;
+		      model = vModel;
 		    }
 
 		    @Override
@@ -190,5 +189,5 @@ public abstract class AbstractVirtualRoadModel<T> extends
 		      return type.isInstance(input)
 		          && model.equalPosition(verifyNotNull(input), reference);
 		    }
-		  }*/
+		  }
 }
