@@ -1,6 +1,10 @@
+package users;
+
 import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
+
+import warehouse.Warehouse;
 
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
@@ -13,14 +17,14 @@ import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
-class Robot implements TickListener, MovingRoadUser, CommUser {
+public class Robot implements TickListener, MovingRoadUser, CommUser {
 	private final RandomGenerator rng;
 	private Optional<CollisionGraphRoadModel> roadModel;
 	private Optional<Point> destination;
 	private LinkedList<Point> path;
 	private Optional<CommDevice> device;
 
-	Robot(RandomGenerator r) {
+	public Robot(RandomGenerator r) {
 		rng = r;
 		roadModel = Optional.absent();
 		destination = Optional.absent();

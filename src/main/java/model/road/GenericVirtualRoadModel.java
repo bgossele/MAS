@@ -1,7 +1,10 @@
+package model.road;
 import static com.google.common.base.Preconditions.checkState;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import users.VirtualUser;
 
 import com.github.rinde.rinsim.core.model.AbstractModel;
 

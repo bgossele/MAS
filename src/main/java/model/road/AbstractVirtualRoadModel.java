@@ -1,3 +1,4 @@
+package model.road;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verifyNotNull;
 
@@ -10,6 +11,8 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+
+import users.VirtualUser;
 
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Predicate;

@@ -1,3 +1,4 @@
+package model.road;
 import static com.github.rinde.rinsim.geom.Graphs.unmodifiableGraph;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
@@ -9,7 +10,11 @@ import javax.measure.quantity.Length;
 import javax.measure.quantity.Velocity;
 import javax.measure.unit.Unit;
 
+import model.road.VirtualGraphRoadModel.Loc;
+
 import org.apache.commons.math3.random.RandomGenerator;
+
+import users.VirtualUser;
 
 import com.github.rinde.rinsim.geom.Connection;
 import com.github.rinde.rinsim.geom.ConnectionData;
@@ -191,17 +196,16 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 				* diff.y, conn, roadLength, relativePos);
 	}
 
-	@Override
+
 	protected Point locObj2point(Loc locObj) {
 		return locObj;
 	}
 
-	@Override
+
 	protected Loc point2LocObj(Point point) {
 		return asLoc(point);
 	}
 
-	@Override
 	public Point getRandomPosition(RandomGenerator rnd) {
 		return graph.getRandomNode(rnd);
 	}
@@ -257,4 +261,6 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 			return conn.equals(l.conn);
 		}
 	}
+
+	
 }

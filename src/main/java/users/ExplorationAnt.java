@@ -1,6 +1,9 @@
+package users;
 import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
+
+import warehouse.Warehouse;
 
 import com.github.rinde.rinsim.core.Simulator;
 import com.github.rinde.rinsim.core.TickListener;
@@ -13,7 +16,7 @@ import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
-class ExplorationAnt implements TickListener, VirtualUser, CommUser {
+public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 	private Optional<CollisionGraphRoadModel> roadModel;
 	private Optional<Point> previousPosition;
 	private Optional<Point> position;

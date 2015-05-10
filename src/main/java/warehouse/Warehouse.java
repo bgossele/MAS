@@ -1,6 +1,9 @@
+package warehouse;
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Map;
+
+import users.Robot;
 
 import com.github.rinde.rinsim.core.Simulator;
 import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;

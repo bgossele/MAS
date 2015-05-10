@@ -1,3 +1,6 @@
+package users;
+import model.road.VirtualGraphRoadModel;
+
 public interface VirtualUser {
 
 	/**
