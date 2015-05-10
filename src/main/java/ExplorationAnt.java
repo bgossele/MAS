@@ -13,8 +13,8 @@ import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
-class ExplorationAnt implements TickListener, WarehouseAgent, CommUser {
-	private Optional<CustomCollisionGraphRoadModel> roadModel;
+class ExplorationAnt implements TickListener, VirtualUser, CommUser {
+	private Optional<CollisionGraphRoadModel> roadModel;
 	private Optional<Point> previousPosition;
 	private Optional<Point> position;
 	private Optional<Point> destination;
@@ -41,13 +41,8 @@ class ExplorationAnt implements TickListener, WarehouseAgent, CommUser {
 
 	@Override
 	public void initRoadUser(RoadModel model) {
-		roadModel = Optional.of((CustomCollisionGraphRoadModel) model);
+		roadModel = Optional.of((CollisionGraphRoadModel) model);
 		roadModel.get().addObjectAt(this, position.get());
-	}
-
-	@Override
-	public double getSpeed() {
-		return 100;
 	}
 
 	@Override

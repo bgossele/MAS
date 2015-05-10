@@ -1,22 +1,21 @@
-
 import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
-import com.github.rinde.rinsim.core.Simulator;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
 import com.github.rinde.rinsim.core.model.comm.CommDeviceBuilder;
 import com.github.rinde.rinsim.core.model.comm.CommUser;
 import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
+import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
-class Robot implements TickListener, WarehouseAgent, CommUser {
+class Robot implements TickListener, MovingRoadUser, CommUser {
 	private final RandomGenerator rng;
-	private Optional<CustomCollisionGraphRoadModel> roadModel;
+	private Optional<CollisionGraphRoadModel> roadModel;
 	private Optional<Point> destination;
 	private LinkedList<Point> path;
 	private Optional<CommDevice> device;
@@ -31,7 +30,7 @@ class Robot implements TickListener, WarehouseAgent, CommUser {
 
 	@Override
 	public void initRoadUser(RoadModel model) {
-		roadModel = Optional.of((CustomCollisionGraphRoadModel) model);
+		roadModel = Optional.of((CollisionGraphRoadModel) model);
 		Point p;
 		do {
 			p = model.getRandomPosition(rng);
@@ -73,11 +72,6 @@ class Robot implements TickListener, WarehouseAgent, CommUser {
 
 	@Override
 	public void afterTick(TimeLapse timeLapse) {
-	}
-
-	@Override
-	public boolean isPhysical() {
-		return true;
 	}
 
 	@Override
