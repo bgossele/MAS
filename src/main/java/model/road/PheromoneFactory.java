@@ -22,8 +22,8 @@ public class PheromoneFactory {
 		pheromone.setRobot(robot);
 		return pheromone;
 	}
-	
-	public static void returnPheromone(Pheromone pheromone) {
+
+	static void returnPheromone(Pheromone pheromone) {
 		unusedPheremoneInstances.add(pheromone);
 	}
 }
