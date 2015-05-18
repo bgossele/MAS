@@ -2,6 +2,7 @@ package users;
 import java.util.LinkedList;
 
 import model.road.VirtualGraphRoadModel;
+import model.road.VirtualRoadModel;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
@@ -19,6 +20,7 @@ import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
 public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
+	
 	private Optional<VirtualGraphRoadModel> roadModel;
 	private Optional<Point> previousPosition;
 	private Optional<Point> position;
@@ -44,11 +46,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 		device = Optional.absent();
 	}
 
-	@Override
-	public void initVirtualUser(VirtualGraphRoadModel model) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 	
 	@Override
 	public void tick(TimeLapse timeLapse) {
@@ -66,7 +64,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 				}
 			}
 		} else {
-			roadModel.get().moveTo(this, destination.get(), timeLapse);
+			roadModel.get().moveTo(this, destination.get());
 		}
 	}
 
@@ -85,6 +83,12 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 	@Override
 	public void setCommDevice(CommDeviceBuilder builder) {
 		device = Optional.of(builder.build());
+	}
+
+	@Override
+	public void initVirtualUser(VirtualRoadModel model) {
+		// TODO Auto-generated method stub
+		
 	}
 
 
