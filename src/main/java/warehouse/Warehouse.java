@@ -59,6 +59,7 @@ public final class Warehouse {
 		View.create(sim)
 				.with(HybridWarehouseRenderer.builder().setMargin(VEHICLE_LENGTH))
 				.with(AGVRenderer.builder().useDifferentColorsForVehicles())
+				.with(AntRenderer.builder().useDifferentColorsForVehicles())
 				.show();
 	}
 

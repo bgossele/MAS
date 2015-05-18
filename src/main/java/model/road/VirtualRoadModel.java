@@ -4,6 +4,7 @@ import users.VirtualUser;
 
 import com.github.rinde.rinsim.core.model.Model;
 import com.github.rinde.rinsim.core.model.road.RoadUser;
+import com.github.rinde.rinsim.event.EventAPI;
 import com.github.rinde.rinsim.geom.Point;
 
 public interface VirtualRoadModel extends Model<VirtualUser>{
@@ -19,5 +20,10 @@ public interface VirtualRoadModel extends Model<VirtualUser>{
 	  boolean equalPosition(VirtualUser obj1, VirtualUser obj2);
 	  
 	  void moveTo(VirtualUser user, Point destination);
+	  
+	  /**
+	   * @return The {@link EventAPI} for this road model.
+	   */
+	  EventAPI getEventAPI();
 	  
 }
