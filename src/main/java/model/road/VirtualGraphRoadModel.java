@@ -32,8 +32,6 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 	 */
 	protected volatile Map<VirtualUser, Loc> objLocs = new HashMap<VirtualUser, Loc>();
 	
-	protected volatile Map<Loc,List<Pheromone>> pheromones = new HashMap<Loc, List<Pheromone>>();
-
 	/**
 	 * Precision.
 	 */
@@ -60,10 +58,6 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 		checkArgument(graph.containsNode(pos),
 				"Object must be initiated on a crossroad.");
 		super.addObjectAt(newObj, asLoc(pos));
-	}
-	
-	public void dropPheromone(VirtualUser user, Pheromone pheromone) {
-		pheromones.get(objLocs.get(user));
 	}
 	
 	@Override
