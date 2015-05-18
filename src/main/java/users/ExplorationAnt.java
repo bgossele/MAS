@@ -4,18 +4,13 @@ import java.util.LinkedList;
 import model.road.VirtualGraphRoadModel;
 import model.road.VirtualRoadModel;
 
-import org.apache.commons.math3.random.RandomGenerator;
-
 import warehouse.Warehouse;
 
-import com.github.rinde.rinsim.core.Simulator;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
 import com.github.rinde.rinsim.core.model.comm.CommDeviceBuilder;
 import com.github.rinde.rinsim.core.model.comm.CommUser;
-import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
-import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
@@ -28,7 +23,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 	private LinkedList<Point> path;
 	private Optional<CommDevice> device;
 
-	ExplorationAnt(Point start) {
+	public ExplorationAnt(Point start) {
 		roadModel = Optional.absent();
 		previousPosition = Optional.absent();
 		position = Optional.of(start);
@@ -37,16 +32,14 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 		device = Optional.absent();
 	}
 
-	ExplorationAnt(Point start, Point destination) {
+	public ExplorationAnt(Point start, Point destination) {
 		roadModel = Optional.absent();
 		previousPosition = Optional.absent();
 		position = Optional.of(start);
 		this.destination = Optional.of(destination);
 		path = new LinkedList<>();
 		device = Optional.absent();
-	}
-
-	
+	}	
 	
 	@Override
 	public void tick(TimeLapse timeLapse) {
@@ -66,6 +59,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 		} else {
 			roadModel.get().moveTo(this, destination.get());
 		}
+		
 	}
 
 	@Override
@@ -87,8 +81,8 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 
 	@Override
 	public void initVirtualUser(VirtualRoadModel model) {
-		// TODO Auto-generated method stub
-		
+		roadModel = Optional.of((VirtualGraphRoadModel) model);
+		roadModel.get().addObjectAt(this, position.get());
 	}
 
 

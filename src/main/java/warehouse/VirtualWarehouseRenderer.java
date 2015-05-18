@@ -31,7 +31,7 @@ public final class VirtualWarehouseRenderer implements CanvasRenderer {
 				Point p = (Point) model.getObjectLocations().get(user);
 				gc.setAlpha(SEMI_TRANSPARENT);
 				// adapter.setBackgroundSysCol(SWT.COLOR_RED);
-				fillCircle(gc, vp, p, vehicleLength / 2d + minDistance);
+				fillCircle(gc, vp, p, 5);
 				// gc.setAlpha(OPAQUE);
 			}
 		}

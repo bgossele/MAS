@@ -4,13 +4,17 @@ import static com.github.rinde.rinsim.geom.Graphs.unmodifiableGraph;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.ArrayList;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+import javax.measure.quantity.Length;
+import javax.measure.quantity.Velocity;
+import javax.measure.unit.NonSI;
+import javax.measure.unit.SI;
+import javax.measure.unit.Unit;
 
 import model.road.VirtualGraphRoadModel.Loc;
 
@@ -18,12 +22,19 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import users.VirtualUser;
 
+import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
+import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel.Builder;
+import com.github.rinde.rinsim.event.Event;
+import com.github.rinde.rinsim.event.Listener;
 import com.github.rinde.rinsim.geom.Connection;
 import com.github.rinde.rinsim.geom.ConnectionData;
 import com.github.rinde.rinsim.geom.Graph;
+import com.github.rinde.rinsim.geom.ListenableGraph;
 import com.github.rinde.rinsim.geom.Point;
+import com.github.rinde.rinsim.geom.ListenableGraph.GraphEvent;
 import com.google.common.base.Optional;
 import com.google.common.base.VerifyException;
+import com.google.common.primitives.Doubles;
 
 public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 
@@ -31,7 +42,7 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 	 * A mapping of {@link VirtualUser} to location.
 	 */
 	protected volatile Map<VirtualUser, Loc> objLocs = new HashMap<VirtualUser, Loc>();
-	
+
 	/**
 	 * Precision.
 	 */
@@ -49,9 +60,9 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 	 * @param pGraph
 	 *            The graph which will be used as road structure.
 	 */
-	public VirtualGraphRoadModel(Graph<? extends ConnectionData> pGraph) {
+	public VirtualGraphRoadModel(Builder builder) {
 		super();
-		graph = pGraph;
+		graph = builder.graph;
 	}
 
 	public void addObjectAt(VirtualUser newObj, Point pos) {
@@ -59,13 +70,27 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 				"Object must be initiated on a crossroad.");
 		super.addObjectAt(newObj, asLoc(pos));
 	}
-	
+
 	@Override
 	public void moveTo(VirtualUser user, Point destination) {
 		checkArgument(super.containsObject(user),
 				"User must be on graph before being moved.");
 		super.removeObject(user);
 		super.addObjectAt(user, destination);
+	}
+
+	/**
+	 * Create a {@link Builder} for constructing {@link VirtualGraphRoadModel}
+	 * instances. Note that all connections in the specified graph must have
+	 * length <code>2 * vehicleLength</code>, where vehicle length can be
+	 * specified in {@link Builder#setVehicleLength(double)}.
+	 * 
+	 * @param graph
+	 *            A {@link ListenableGraph}.
+	 * @return A new {@link Builder} instance.
+	 */
+	public static Builder builder(ListenableGraph<?> graph) {
+		return new Builder(graph);
 	}
 
 	/**
@@ -162,7 +187,7 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 		}
 		return Optional.absent();
 	}
-	
+
 	public Map<VirtualUser, Loc> getObjectLocations() {
 		return objLocs;
 	}
@@ -219,9 +244,9 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 	public Point getRandomPosition(RandomGenerator rnd) {
 		return graph.getRandomNode(rnd);
 	}
-	
-	public ArrayList<Point> getNeighbors(Point point){
-		//TODO implement
+
+	public ArrayList<Point> getNeighbors(Point point) {
+		// TODO implement
 		return new ArrayList<Point>();
 	}
 
@@ -276,5 +301,110 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 			return conn.equals(l.conn);
 		}
 	}
+	
+	/**
+	   * A builder for constructing {@link CollisionGraphRoadModel} instances. Use
+	   * {@link CollisionGraphRoadModel#builder(ListenableGraph)} for obtaining
+	   * builder instances.
+	   * @author Rinde van Lon
+	   */
+	  public static final class Builder {
+	    /**
+	     * The default distance unit: {@link SI#METER}.
+	     */
+	    public static final Unit<Length> DEFAULT_DISTANCE_UNIT = SI.METER;
+
+	    /**
+	     * The default speed unit: {@link NonSI#KILOMETERS_PER_HOUR}.
+	     */
+	    public static final Unit<Velocity> DEFAULT_SPEED_UNIT = NonSI.KILOMETERS_PER_HOUR;
+
+	    /**
+	     * The default vehicle length: <code>2</code>.
+	     */
+	    public static final double DEFAULT_VEHICLE_LENGTH = 2;
+
+	    /**
+	     * The default minimum distance: <code>.25</code>.
+	     */
+	    public static final double DEFAULT_MIN_DISTANCE = .25;
+
+	    final ListenableGraph<?> graph;
+	    Unit<Length> distanceUnit;
+	    Unit<Velocity> speedUnit;
+	    double vehicleLength;
+	    double minDistance;
+
+	    Builder(ListenableGraph<?> g) {
+	      graph = g;
+	      distanceUnit = DEFAULT_DISTANCE_UNIT;
+	      speedUnit = DEFAULT_SPEED_UNIT;
+	      vehicleLength = DEFAULT_VEHICLE_LENGTH;
+	      minDistance = DEFAULT_MIN_DISTANCE;
+	    }
+
+	    /**
+	     * Sets the distance unit used to interpret all coordinates and distances,
+	     * including those of the supplied {@link ListenableGraph}. The default
+	     * value is {@link #DEFAULT_DISTANCE_UNIT}.
+	     * @param unit The unit to set.
+	     * @return This, as per the builder pattern.
+	     */
+	    public Builder setDistanceUnit(Unit<Length> unit) {
+	      distanceUnit = unit;
+	      return this;
+	    }
+
+	    /**
+	     * Sets the speed unit used to interpret the speeds of all vehicles. The
+	     * default value is {@link #DEFAULT_SPEED_UNIT}.
+	     * @param unit The unit to set.
+	     * @return This, as per the builder pattern.
+	     */
+	    public Builder setSpeedUnit(Unit<Velocity> unit) {
+	      speedUnit = unit;
+	      return this;
+	    }
+
+	    /**
+	     * Sets the length of each vehicle added to the
+	     * {@link CollisionGraphRoadModel} that will be constructed by this builder.
+	     * The vehicle length must be a strictly positive number. The default value
+	     * is {@link #DEFAULT_VEHICLE_LENGTH}.
+	     * @param length A length expressed in the unit set by
+	     *          {@link #setDistanceUnit(Unit)}.
+	     * @return This, as per the builder pattern.
+	     */
+	    public Builder setVehicleLength(double length) {
+	      checkArgument(length > 0d,
+	        "Only positive vehicle lengths are allowed, found %s.", length);
+	      checkArgument(Doubles.isFinite(length),
+	        "%s is not a valid vehicle length.", length);
+	      vehicleLength = length;
+	      return this;
+	    }
+
+	    /**
+	     * Sets the minimum required distance between two vehicles. The minimum
+	     * distance must be a positive number &le; to 2 * vehicle length. The
+	     * default value is {@link #DEFAULT_MIN_DISTANCE}.
+	     * @param dist A distance expressed in the unit set by
+	     *          {@link #setDistanceUnit(Unit)}.
+	     * @return This, as per the builder pattern.
+	     */
+	    public Builder setMinDistance(double dist) {
+	      checkArgument(dist >= 0d);
+	      minDistance = dist;
+	      return this;
+	    }
+
+	    /**
+	     * @return A new {@link CollisionGraphRoadModel} instance.
+	     */
+	    public VirtualGraphRoadModel build() {
+	      
+	      return new VirtualGraphRoadModel(this);
+	    }
+	  }
 
 }

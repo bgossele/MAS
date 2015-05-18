@@ -3,6 +3,8 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Map;
 
+import model.road.VirtualGraphRoadModel;
+import users.ExplorationAnt;
 import users.Robot;
 
 import com.github.rinde.rinsim.core.Simulator;
@@ -39,19 +41,23 @@ public final class Warehouse {
 	 */
 	public static void main(String[] args) {
 
+		ListenableGraph<LengthData> g = createSimpleGraph();
+		
 		sim = Simulator
 				.builder()
 				.addModel(
-						CollisionGraphRoadModel.builder(createSimpleGraph())
+						CollisionGraphRoadModel.builder(g)
 								.setVehicleLength(VEHICLE_LENGTH).build())
+				.addModel(VirtualGraphRoadModel.builder(g).build())
 				.build();
 
 		for (int i = 0; i < 1; i++) {
 			sim.register(new Robot(sim.getRandomGenerator()));
+			sim.register(new ExplorationAnt(new Point(0,0)));
 		}
 
 		View.create(sim)
-				.with(WarehouseRenderer.builder().setMargin(VEHICLE_LENGTH))
+				.with(HybridWarehouseRenderer.builder().setMargin(VEHICLE_LENGTH))
 				.with(AGVRenderer.builder().useDifferentColorsForVehicles())
 				.show();
 	}
