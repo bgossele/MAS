@@ -151,6 +151,10 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 		}
 		return Optional.absent();
 	}
+	
+	public Map<VirtualUser, Loc> getObjectLocations() {
+		return objLocs;
+	}
 
 	public Map<VirtualUser, Loc> getObjectLocations() {
 		return objLocs;
