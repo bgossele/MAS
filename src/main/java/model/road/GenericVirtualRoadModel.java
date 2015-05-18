@@ -9,7 +9,7 @@ import users.VirtualUser;
 import com.github.rinde.rinsim.core.model.AbstractModel;
 
 public abstract class GenericVirtualRoadModel extends AbstractModel<VirtualUser> 
-	implements VirtualRoadModel{
+	implements VirtualRoadModel {
 
   /**
    * The logger of the model.

@@ -4,7 +4,9 @@ import static com.github.rinde.rinsim.geom.Graphs.unmodifiableGraph;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
 
+
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -55,6 +57,14 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 		checkArgument(graph.containsNode(pos),
 				"Object must be initiated on a crossroad.");
 		super.addObjectAt(newObj, asLoc(pos));
+	}
+	
+	@Override
+	public void moveTo(VirtualUser user, Point destination) {
+		checkArgument(super.containsObject(user),
+				"User must be on graph before being moved.");
+		super.removeObject(user);
+		super.addObjectAt(user, destination);
 	}
 
 	/**
@@ -211,6 +221,11 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 
 	public Point getRandomPosition(RandomGenerator rnd) {
 		return graph.getRandomNode(rnd);
+	}
+	
+	public ArrayList<Point> getNeighbors(Point point){
+		//TODO implement
+		return new ArrayList<Point>();
 	}
 
 	/**

@@ -1,36 +1,20 @@
 package warehouse;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import model.road.VirtualGraphRoadModel;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.GC;
 
+import users.VirtualUser;
+
 import com.github.rinde.rinsim.core.model.ModelProvider;
-import com.github.rinde.rinsim.geom.Connection;
 import com.github.rinde.rinsim.geom.Graph;
-import com.github.rinde.rinsim.geom.Graphs;
 import com.github.rinde.rinsim.geom.Point;
 import com.github.rinde.rinsim.ui.renderers.CanvasRenderer;
 import com.github.rinde.rinsim.ui.renderers.CanvasRendererBuilder;
 import com.github.rinde.rinsim.ui.renderers.ViewPort;
 import com.github.rinde.rinsim.ui.renderers.ViewRect;
-import com.google.common.base.Optional;
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.PeekingIterator;
-import com.google.common.collect.Table;
 
 public final class VirtualWarehouseRenderer implements CanvasRenderer {
 
@@ -42,14 +26,15 @@ public final class VirtualWarehouseRenderer implements CanvasRenderer {
 
 	@Override
 	public void renderDynamic(GC gc, ViewPort vp, long time) {
-	    if (showNodeOccupancy) {
-	      for (final Point p : model.getObjectLocations()) {
-	        gc.setAlpha(SEMI_TRANSPARENT);
-	        //adapter.setBackgroundSysCol(SWT.COLOR_RED);
-	        fillCircle(gc, vp, p, vehicleLength / 2d + minDistance);
-	       // gc.setAlpha(OPAQUE);
-	      }
-	    }
+		if (showNodeOccupancy) {
+			for (VirtualUser user : model.getObjectLocations().keySet()) {
+				Point p = (Point) model.getObjectLocations().get(user);
+				gc.setAlpha(SEMI_TRANSPARENT);
+				// adapter.setBackgroundSysCol(SWT.COLOR_RED);
+				fillCircle(gc, vp, p, vehicleLength / 2d + minDistance);
+				// gc.setAlpha(OPAQUE);
+			}
+		}
 	}
 	
 	private void fillCircle(GC gc, ViewPort vp, Point p, double radius) {
