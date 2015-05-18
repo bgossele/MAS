@@ -12,6 +12,7 @@ import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.geom.ConnectionData;
 import com.github.rinde.rinsim.geom.Graph;
+import com.github.rinde.rinsim.geom.ListenableGraph;
 
 public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 		implements TickListener {
@@ -21,7 +22,8 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 	protected volatile Map<Loc, List<Pheromone>> pheromones = new HashMap<Loc, List<Pheromone>>();
 
 	public PheromoneVirtualGraphRoadModel(Graph<? extends ConnectionData> pGraph) {
-		super(pGraph);
+		//TODO cast proper?
+		super(new Builder((ListenableGraph<?>) pGraph));
 	}
 
 	public void dropPheromone(VirtualUser user, Pheromone pheromone) {
@@ -44,6 +46,7 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 
 	@Override
 	public void afterTick(TimeLapse timeLapse) {
+		//Update the life of pheromones and remove pheromones if they are expired.
 		Iterator<List<Pheromone>> pheromoneListIterator = pheromones.values()
 				.iterator();
 		while (pheromoneListIterator.hasNext()) {
