@@ -1,11 +1,14 @@
 package model.road;
+
 import static com.github.rinde.rinsim.geom.Graphs.unmodifiableGraph;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
+
 import model.road.VirtualGraphRoadModel.Loc;
 
 import org.apache.commons.math3.random.RandomGenerator;
@@ -19,13 +22,12 @@ import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 import com.google.common.base.VerifyException;
 
-
 public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 
 	/**
 	 * A mapping of {@link VirtualUser} to location.
 	 */
-	protected volatile Map<VirtualUser, Loc> objLocs;
+	protected volatile Map<VirtualUser, Loc> objLocs = new HashMap<VirtualUser, Loc>();
 
 	/**
 	 * Precision.
@@ -150,6 +152,10 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 		return Optional.absent();
 	}
 
+	public Map<VirtualUser, Loc> getObjectLocations() {
+		return objLocs;
+	}
+
 	/**
 	 * Creates a new {@link Loc} based on the provided {@link Point}.
 	 * 
@@ -191,11 +197,9 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 				* diff.y, conn, roadLength, relativePos);
 	}
 
-
 	protected Point locObj2point(Loc locObj) {
 		return locObj;
 	}
-
 
 	protected Loc point2LocObj(Point point) {
 		return asLoc(point);
@@ -257,5 +261,4 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 		}
 	}
 
-	
 }
