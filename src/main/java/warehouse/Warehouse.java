@@ -1,9 +1,10 @@
 package warehouse;
+
 import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Map;
 
-import model.road.VirtualGraphRoadModel;
+import model.road.PheromoneVirtualGraphRoadModel;
 import users.Robot;
 
 import com.github.rinde.rinsim.core.Simulator;
@@ -24,12 +25,6 @@ public final class Warehouse {
 
 	private static final double VEHICLE_LENGTH = 2d;
 
-	private static Simulator sim;
-
-	public static Simulator getSimulator() {
-		return sim;
-	}
-
 	private Warehouse() {
 	}
 
@@ -40,21 +35,25 @@ public final class Warehouse {
 	public static void main(String[] args) {
 
 		ListenableGraph<LengthData> g = createSimpleGraph();
-		
-		sim = Simulator
+		PheromoneVirtualGraphRoadModel pheromoneVirualModel = new PheromoneVirtualGraphRoadModel(
+				g);
+
+		Simulator sim = Simulator
 				.builder()
 				.addModel(
 						CollisionGraphRoadModel.builder(g)
 								.setVehicleLength(VEHICLE_LENGTH).build())
-				.addModel(new VirtualGraphRoadModel(g))
-				.build();
+				.addModel(pheromoneVirualModel).build();
 
 		for (int i = 0; i < 1; i++) {
 			sim.register(new Robot(sim.getRandomGenerator()));
 		}
 
+		sim.addTickListener(pheromoneVirualModel);
+
 		View.create(sim)
-				.with(HybridWarehouseRenderer.builder().setMargin(VEHICLE_LENGTH))
+				.with(HybridWarehouseRenderer.builder().setMargin(
+						VEHICLE_LENGTH))
 				.with(AGVRenderer.builder().useDifferentColorsForVehicles())
 				.with(AntRenderer.builder().useDifferentColorsForVehicles())
 				.show();

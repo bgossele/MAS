@@ -4,8 +4,8 @@ import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
-import warehouse.Warehouse;
-
+import com.github.rinde.rinsim.core.SimulatorAPI;
+import com.github.rinde.rinsim.core.SimulatorUser;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
@@ -18,13 +18,16 @@ import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
-public class Robot implements TickListener, MovingRoadUser, CommUser {
+public class Robot implements TickListener, MovingRoadUser, CommUser,
+		SimulatorUser {
 	private final RandomGenerator rng;
 	private Optional<CollisionGraphRoadModel> roadModel;
 	private Optional<Point> destination;
 	private LinkedList<Point> path;
 	private Point lastHop;
 	private Optional<CommDevice> device;
+
+	private SimulatorAPI simulator;
 
 	public Robot(RandomGenerator r) {
 		rng = r;
@@ -56,22 +59,22 @@ public class Robot implements TickListener, MovingRoadUser, CommUser {
 		path = new LinkedList<>(roadModel.get().getShortestPathTo(this,
 				destination.get()));
 	}
-	
+
 	private boolean started = false;
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if(started) {
+		if (started) {
 			ExplorationAnt ant = new ExplorationAnt(lastHop);
-			Warehouse.getSimulator().register(ant);
+			simulator.register(ant);
 		}
-		
+
 		if (!destination.isPresent()) {
 			nextDestination();
 		}
 
 		MoveProgress mp = roadModel.get().followPath(this, path, timeLapse);
-		if (mp.travelledNodes().size() > 0){
+		if (mp.travelledNodes().size() > 0) {
 			lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
 		}
 
@@ -95,6 +98,11 @@ public class Robot implements TickListener, MovingRoadUser, CommUser {
 	@Override
 	public void setCommDevice(CommDeviceBuilder builder) {
 		device = Optional.of(builder.build());
+	}
+
+	@Override
+	public void setSimulator(SimulatorAPI api) {
+		simulator = api;
 	}
 
 }
