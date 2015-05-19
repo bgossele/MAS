@@ -1,7 +1,7 @@
 package model.road;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verifyNotNull;
-
 
 import java.util.Collection;
 import java.util.Collections;
@@ -15,11 +15,15 @@ import javax.annotation.Nullable;
 
 import users.VirtualUser;
 
+import com.github.rinde.rinsim.core.model.road.RoadModelEvent;
+import com.github.rinde.rinsim.core.model.road.GenericRoadModel.RoadEventType;
+import com.github.rinde.rinsim.event.EventAPI;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Predicate;
 import com.google.common.collect.Sets;
 
-public abstract class AbstractVirtualRoadModel<T> extends GenericVirtualRoadModel {
+public abstract class AbstractVirtualRoadModel<T> extends
+		GenericVirtualRoadModel {
 
 	/**
 	 * A mapping of {@link VirtualUser} to location.
@@ -56,6 +60,9 @@ public abstract class AbstractVirtualRoadModel<T> extends GenericVirtualRoadMode
 		checkArgument(!objLocs.containsKey(newObj),
 				"Object is already added: %s.", newObj);
 		objLocs.put(newObj, point2LocObj(pos));
+		eventDispatcher.dispatchEvent(new VirtualRoadModelEvent(
+				RoadEventType.ADD_ROAD_USER, this, newObj));
+
 	}
 
 	public void addObjectAtSamePosition(VirtualUser newObj,
@@ -65,129 +72,143 @@ public abstract class AbstractVirtualRoadModel<T> extends GenericVirtualRoadMode
 		checkArgument(objLocs.containsKey(existingObj),
 				"Object %s does not exist.", existingObj);
 		objLocs.put(newObj, objLocs.get(existingObj));
+		eventDispatcher.dispatchEvent(new VirtualRoadModelEvent(
+				RoadEventType.ADD_ROAD_USER, this, newObj));
 	}
 
 	public void removeObject(VirtualUser virtualUser) {
 		checkArgument(objLocs.containsKey(virtualUser),
 				"RoadUser: %s does not exist.", virtualUser);
 		objLocs.remove(virtualUser);
+		eventDispatcher.dispatchEvent(new VirtualRoadModelEvent(
+				RoadEventType.REMOVE_ROAD_USER, this, virtualUser));
+	}
+
+	@Override
+	public final EventAPI getEventAPI() {
+		return eventDispatcher.getPublicEventAPI();
 	}
 
 	public void clear() {
 		objLocs.clear();
 	}
-	
+
 	public boolean containsObject(VirtualUser obj) {
-	    return objLocs.containsKey(obj);
-	  }
+		return objLocs.containsKey(obj);
+	}
 
-	  public boolean containsObjectAt(VirtualUser obj, Point p) {
-	    if (containsObject(obj)) {
-	      return objLocs.get(obj).equals(p);
-	    }
-	    return false;
-	  }
+	public boolean containsObjectAt(VirtualUser obj, Point p) {
+		if (containsObject(obj)) {
+			return objLocs.get(obj).equals(p);
+		}
+		return false;
+	}
 
-	  public boolean equalPosition(VirtualUser obj1, VirtualUser obj2) {
-	    return containsObject(obj1) && containsObject(obj2)
-	        && getPosition(obj1).equals(getPosition(obj2));
-	  }
+	public boolean equalPosition(VirtualUser obj1, VirtualUser obj2) {
+		return containsObject(obj1) && containsObject(obj2)
+				&& getPosition(obj1).equals(getPosition(obj2));
+	}
 
-	  public Map<VirtualUser, Point> getObjectsAndPositions() {
-	    Map<VirtualUser, T> copiedMap;
-	    synchronized (objLocs) {
-	      copiedMap = new LinkedHashMap<>();
-	      copiedMap.putAll(objLocs);
-	      // it is safe to release the lock now
-	    }
+	public Map<VirtualUser, Point> getObjectsAndPositions() {
+		Map<VirtualUser, T> copiedMap;
+		synchronized (objLocs) {
+			copiedMap = new LinkedHashMap<>();
+			copiedMap.putAll(objLocs);
+			// it is safe to release the lock now
+		}
 
-	    final Map<VirtualUser, Point> theMap = new LinkedHashMap<>();
-	    for (final java.util.Map.Entry<VirtualUser, T> entry : copiedMap.entrySet()) {
-	      theMap.put(entry.getKey(), locObj2point(entry.getValue()));
-	    }
-	    return theMap;
-	  }
+		final Map<VirtualUser, Point> theMap = new LinkedHashMap<>();
+		for (final java.util.Map.Entry<VirtualUser, T> entry : copiedMap
+				.entrySet()) {
+			theMap.put(entry.getKey(), locObj2point(entry.getValue()));
+		}
+		return theMap;
+	}
 
-	  public Point getPosition(VirtualUser virtualUser) {
-	    checkArgument(containsObject(virtualUser), "RoadUser does not exist: %s.",
-	    		virtualUser);
-	    return locObj2point(objLocs.get(virtualUser));
-	  }
+	public Point getPosition(VirtualUser virtualUser) {
+		checkArgument(containsObject(virtualUser),
+				"RoadUser does not exist: %s.", virtualUser);
+		return locObj2point(objLocs.get(virtualUser));
+	}
 
-	  public Collection<Point> getObjectPositions() {
-	    return getObjectsAndPositions().values();
-	  }
+	public Collection<Point> getObjectPositions() {
+		return getObjectsAndPositions().values();
+	}
 
-	  public Set<VirtualUser> getObjects() {
-	    synchronized (objLocs) {
-	      final Set<VirtualUser> copy = new LinkedHashSet<>();
-	      copy.addAll(objLocs.keySet());
-	      return copy;
-	    }
-	  }
+	public Set<VirtualUser> getObjects() {
+		synchronized (objLocs) {
+			final Set<VirtualUser> copy = new LinkedHashSet<>();
+			copy.addAll(objLocs.keySet());
+			return copy;
+		}
+	}
 
-	  public Set<VirtualUser> getObjects(Predicate<VirtualUser> predicate) {
-	    return Sets.filter(getObjects(), predicate);
-	  }
+	public Set<VirtualUser> getObjects(Predicate<VirtualUser> predicate) {
+		return Sets.filter(getObjects(), predicate);
+	}
 
-	  public <Y extends VirtualUser> Set<Y> getObjectsAt(VirtualUser virtualUser,
-	      Class<Y> type) {
-	    final Set<Y> result = new HashSet<>();
-	    for (final VirtualUser ru : getObjects(new SameLocationPredicate(virtualUser, type, self))) {
-	      result.add((Y) ru);
-	    }
-	    return result;
-	  }
+	public <Y extends VirtualUser> Set<Y> getObjectsAt(VirtualUser virtualUser,
+			Class<Y> type) {
+		final Set<Y> result = new HashSet<>();
+		for (final VirtualUser ru : getObjects(new SameLocationPredicate(
+				virtualUser, type, self))) {
+			result.add((Y) ru);
+		}
+		return result;
+	}
 
-	  @SuppressWarnings("unchecked")
-	  public <Y extends VirtualUser> Set<Y> getObjectsOfType(final Class<Y> type) {
-	    return (Set<Y>) getObjects(new Predicate<VirtualUser>() {
-	      @Override
-	      public boolean apply(@Nullable VirtualUser input) {
-	        return type.isInstance(input);
-	      }
-	    });
-	  }
+	@SuppressWarnings("unchecked")
+	public <Y extends VirtualUser> Set<Y> getObjectsOfType(final Class<Y> type) {
+		return (Set<Y>) getObjects(new Predicate<VirtualUser>() {
+			@Override
+			public boolean apply(@Nullable VirtualUser input) {
+				return type.isInstance(input);
+			}
+		});
+	}
 
-	  @Override
-	  public boolean doRegister(VirtualUser virtualUser) {
-	    LOGGER.info("register {}", virtualUser);
-	    //TODO VirtualUser methode moet VirtualRoadModel aanvaarden (zie VirtualRoadModel comment onderaan))
-	    virtualUser.initVirtualUser(self);
-	    return true;
-	  }
+	@Override
+	public boolean doRegister(VirtualUser virtualUser) {
+		LOGGER.info("register {}", virtualUser);
+		// TODO VirtualUser methode moet VirtualRoadModel aanvaarden (zie
+		// VirtualRoadModel comment onderaan))
+		virtualUser.initVirtualUser(self);
+		return true;
+	}
 
-	  @Override
-	  public boolean unregister(VirtualUser virtualUser) {
-	    final boolean contains = containsObject(virtualUser);
-	    LOGGER.info("unregister {} succes: {}", virtualUser, contains);
-	    if (contains) {
-	      removeObject(virtualUser);
-	      return true;
-	    }
-	    return false;
-	  }
+	@Override
+	public boolean unregister(VirtualUser virtualUser) {
+		final boolean contains = containsObject(virtualUser);
+		LOGGER.info("unregister {} succes: {}", virtualUser, contains);
+		if (contains) {
+			removeObject(virtualUser);
+			return true;
+		}
+		return false;
+	}
 
-/*	 
- * TODO eerst VirtualRoadModel interface maken vergelijkbaar met RoadModel => Check.
- * Maar is dit wel nodig? VirtualUsers kunnen toch makkelijk op dezelfde locatie staan?
- */
- private static class SameLocationPredicate implements Predicate<VirtualUser> {
-		    private final VirtualUser reference;
-		    private final VirtualRoadModel model;
-		    private final Class<?> type;
+	/*
+	 * TODO eerst VirtualRoadModel interface maken vergelijkbaar met RoadModel
+	 * => Check. Maar is dit wel nodig? VirtualUsers kunnen toch makkelijk op
+	 * dezelfde locatie staan?
+	 */
+	private static class SameLocationPredicate implements
+			Predicate<VirtualUser> {
+		private final VirtualUser reference;
+		private final VirtualRoadModel model;
+		private final Class<?> type;
 
-		    SameLocationPredicate(final VirtualUser pReference, final Class<?> pType,
-		        final VirtualRoadModel vModel) {
-		      reference = pReference;
-		      type = pType;
-		      model = vModel;
-		    }
+		SameLocationPredicate(final VirtualUser pReference,
+				final Class<?> pType, final VirtualRoadModel vModel) {
+			reference = pReference;
+			type = pType;
+			model = vModel;
+		}
 
-		    @Override
-		    public boolean apply(@Nullable VirtualUser input) {
-		      return type.isInstance(input)
-		          && model.equalPosition(verifyNotNull(input), reference);
-		    }
-		  }
+		@Override
+		public boolean apply(@Nullable VirtualUser input) {
+			return type.isInstance(input)
+					&& model.equalPosition(verifyNotNull(input), reference);
+		}
+	}
 }

@@ -1,5 +1,9 @@
 package model.road;
 import static com.google.common.base.Preconditions.checkState;
+import static java.util.Arrays.asList;
+
+import java.util.LinkedHashSet;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -7,6 +11,8 @@ import org.slf4j.LoggerFactory;
 import users.VirtualUser;
 
 import com.github.rinde.rinsim.core.model.AbstractModel;
+import com.github.rinde.rinsim.core.model.road.GenericRoadModel.RoadEventType;
+import com.github.rinde.rinsim.event.EventDispatcher;
 
 public abstract class GenericVirtualRoadModel extends AbstractModel<VirtualUser> 
 	implements VirtualRoadModel {
@@ -23,8 +29,14 @@ public abstract class GenericVirtualRoadModel extends AbstractModel<VirtualUser>
    */
   protected GenericVirtualRoadModel self = this;
   private boolean initialized = false;
+  protected final EventDispatcher eventDispatcher;
 
-  protected GenericVirtualRoadModel() {}
+  protected GenericVirtualRoadModel() {
+	  
+	    final Set<Enum<?>> events = new LinkedHashSet<>();
+	    events.addAll(asList(RoadEventType.values()));
+	    eventDispatcher = new EventDispatcher(events);
+  }
 
   /**
    * Method which should only be called by a decorator of this instance.
