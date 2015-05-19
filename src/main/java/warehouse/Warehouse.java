@@ -46,7 +46,7 @@ public final class Warehouse {
 				.addModel(
 						CollisionGraphRoadModel.builder(g)
 								.setVehicleLength(VEHICLE_LENGTH).build())
-				.addModel(VirtualGraphRoadModel.builder(g).build())
+				.addModel(new VirtualGraphRoadModel(g))
 				.build();
 
 		for (int i = 0; i < 1; i++) {
