@@ -18,7 +18,9 @@ package warehouse;
 import static com.google.common.base.Verify.verify;
 import static com.google.common.base.Verify.verifyNotNull;
 
+import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -68,6 +70,7 @@ public final class AntRenderer implements CanvasRenderer, Listener {
 	private final RenderHelper helper;
 	private final Map<VirtualUser, VehicleUI> vehicles;
 	private int vehicleCounter;
+	private volatile boolean flag;
 
 	enum VizOptions {
 		COORDINATES, CREATION_NUMBER, VEHICLE_ORIGIN, USE_DIFFERENT_COLORS;
@@ -90,9 +93,9 @@ public final class AntRenderer implements CanvasRenderer, Listener {
 
 		final Set<VirtualUser> obs = model.getObjects();
 		for (final VirtualUser ru : obs) {
-				addVehicleUI((VirtualUser) ru);
-			}
-				
+			addVehicleUI((VirtualUser) ru);
+		}
+
 		model.getEventAPI().addListener(this, RoadEventType.ADD_ROAD_USER,
 				RoadEventType.REMOVE_ROAD_USER);
 	}
@@ -100,7 +103,8 @@ public final class AntRenderer implements CanvasRenderer, Listener {
 	void addVehicleUI(VirtualUser mru) {
 		final int color = vizOptions.contains(VizOptions.USE_DIFFERENT_COLORS) ? colors
 				.next() : DEFAULT_COLOR;
-		final VehicleUI v = new VehicleUI(mru, model, color, vizOptions, vehicleCounter++);
+		final VehicleUI v = new VehicleUI(mru, model, color, vizOptions,
+				vehicleCounter++);
 
 		verify(vehicles.put(mru, v) == null);
 	}
@@ -127,9 +131,13 @@ public final class AntRenderer implements CanvasRenderer, Listener {
 	@Override
 	public void renderDynamic(GC gc, ViewPort vp, long time) {
 		helper.adapt(gc, vp);
-		for (final VehicleUI v : vehicles.values()) {
+		HashSet<VehicleUI> v_uis;
+			v_uis = new HashSet<VehicleUI>(vehicles.values());
+
+		for (final VehicleUI v : v_uis) {
 			v.update(gc, vp, helper);
 		}
+
 	}
 
 	@Override

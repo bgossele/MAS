@@ -1,5 +1,6 @@
 package users;
 
+import java.util.Collection;
 import java.util.LinkedList;
 
 import org.apache.commons.math3.random.RandomGenerator;
@@ -11,21 +12,26 @@ import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
 import com.github.rinde.rinsim.core.model.comm.CommDeviceBuilder;
 import com.github.rinde.rinsim.core.model.comm.CommUser;
+import com.github.rinde.rinsim.core.model.comm.Message;
+import com.github.rinde.rinsim.core.model.comm.MessageContents;
 import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
 import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
+import communication.ExplorationReport;
 
 public class Robot implements TickListener, MovingRoadUser, CommUser,
 		SimulatorUser {
+
 	private final RandomGenerator rng;
 	private Optional<CollisionGraphRoadModel> roadModel;
 	private Optional<Point> destination;
 	private LinkedList<Point> path;
 	private Point lastHop;
 	private Optional<CommDevice> device;
+	public static final int DEFAULT_HOPLIMIT = 10;
 
 	private SimulatorAPI simulator;
 
@@ -65,8 +71,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if (started) {
-			ExplorationAnt ant = new ExplorationAnt(lastHop);
+			ExplorationAnt ant = new ExplorationAnt(lastHop, this, DEFAULT_HOPLIMIT);
 			simulator.register(ant);
+			started = false;
 		}
 
 		if (!destination.isPresent()) {
@@ -80,6 +87,19 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 		if (roadModel.get().getPosition(this).equals(destination.get())) {
 			nextDestination();
+		}
+		
+		readMessages();
+	}
+	
+	private void readMessages() {
+		Collection<Message> messages = device.get().getUnreadMessages();
+		for (Message message: messages) {
+			MessageContents content = message.getContents();
+			if (content instanceof ExplorationReport) {
+				ExplorationReport rep = (ExplorationReport) content;
+				System.out.println("received exploration report for pos " + rep.pos.toString());
+			}
 		}
 	}
 

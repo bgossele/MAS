@@ -1,11 +1,12 @@
 package users;
-import java.util.LinkedList;
 
-import model.road.VirtualGraphRoadModel;
+import java.util.Collection;
+
+import model.road.PheromoneVirtualGraphRoadModel;
 import model.road.VirtualRoadModel;
-import warehouse.Warehouse;
 
 import com.github.rinde.rinsim.core.SimulatorAPI;
+import com.github.rinde.rinsim.core.SimulatorUser;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
@@ -14,53 +15,74 @@ import com.github.rinde.rinsim.core.model.comm.CommUser;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
-public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
-	
-	private Optional<VirtualGraphRoadModel> roadModel;
+import communication.ExplorationReport;
+
+public class ExplorationAnt implements TickListener, VirtualUser, CommUser, SimulatorUser {
+
+	private Optional<PheromoneVirtualGraphRoadModel> roadModel;
 	private Optional<Point> previousPosition;
 	private Optional<Point> position;
 	private Optional<Point> destination;
-	private LinkedList<Point> path;
 	private Optional<CommDevice> device;
 	private SimulatorAPI simulator;
+	private Robot mothership;
+	private final int hopLimit;
+	private int hopCounter;
 
-	public ExplorationAnt(Point start) {
+	public ExplorationAnt(Point start, Robot mothership, int hopLimit) {
 		roadModel = Optional.absent();
 		previousPosition = Optional.absent();
 		position = Optional.of(start);
 		destination = Optional.absent();
-		path = new LinkedList<>();
 		device = Optional.absent();
+		this.mothership = mothership;
+		this.hopLimit = hopLimit;
+		hopCounter = 0;
 	}
 
-	public ExplorationAnt(Point start, Point destination) {
+	public ExplorationAnt(Point start, Point destination, Robot mothership, int hopLimit) {
 		roadModel = Optional.absent();
 		previousPosition = Optional.absent();
 		position = Optional.of(start);
 		this.destination = Optional.of(destination);
-		path = new LinkedList<>();
 		device = Optional.absent();
-	}	
-	
+		this.mothership = mothership;
+		this.hopLimit = hopLimit;
+		hopCounter = 0;
+	}
+
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if (destination.equals(Optional.absent())
-				|| destination.get().equals(roadModel.get().getPosition(this))) {
-			destination = Optional.absent();
-			for (Point des : roadModel.get().getNeighbors(position.get())) {
-				if(des.equals(previousPosition.get())) {
-					continue;
-				} else if (destination.equals(Optional.absent())) {
-					destination = Optional.of(des);
-				} else{
-					ExplorationAnt ant = new ExplorationAnt(position.get(), des);
-					simulator.register(ant);
+		if (hopCounter < hopLimit) {
+			if (destination.equals(Optional.absent())
+					|| destination.get().equals(
+							roadModel.get().getPosition(this))) {
+				destination = Optional.absent();
+				Collection<Point> neighbours = roadModel.get().getNeighbours(roadModel.get().getPosition(this));
+				if(neighbours.size() > 1)
+					System.out.println("Ant neighbours = " + neighbours.toString());
+				for (Point des : neighbours) {
+					if (des.equals(previousPosition.orNull())) {
+						continue;
+					} else if (destination.equals(Optional.absent())) {
+						destination = Optional.of(des);
+					} else {
+						ExplorationAnt ant = new ExplorationAnt(roadModel.get().getPosition(this),
+								des, mothership, hopLimit - hopCounter);
+						simulator.register(ant);
+					}
 				}
+			} else {
+				System.out.println("Ant destination = " + destination.get().toString());
+				roadModel.get().moveTo(this, destination.get());
+				hopCounter += 1;
 			}
+			ExplorationReport message = new ExplorationReport(roadModel.get().getPosition(this), roadModel.get().readPheromones(this));
+			device.get().send(message, mothership);
 		} else {
-			roadModel.get().moveTo(this, destination.get());
+			System.out.println("Hoplimit reached");
 		}
-		
+
 	}
 
 	@Override
@@ -82,9 +104,15 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 
 	@Override
 	public void initVirtualUser(VirtualRoadModel model) {
-		roadModel = Optional.of((VirtualGraphRoadModel) model);
+		roadModel = Optional.of((PheromoneVirtualGraphRoadModel) model);
 		roadModel.get().addObjectAt(this, position.get());
+		System.out.println("Initialised ant at = " + roadModel.get().getPosition(this).toString());
 	}
 
+	@Override
+	public void setSimulator(SimulatorAPI api) {
+		this.simulator = api;
+		
+	}
 
 }
