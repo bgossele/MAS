@@ -4,17 +4,11 @@ import static com.github.rinde.rinsim.geom.Graphs.unmodifiableGraph;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
 
+import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
-import java.util.ArrayList;
 import java.util.Map;
 
 import javax.annotation.Nullable;
-import javax.measure.quantity.Length;
-import javax.measure.quantity.Velocity;
-import javax.measure.unit.NonSI;
-import javax.measure.unit.SI;
-import javax.measure.unit.Unit;
 
 import model.road.VirtualGraphRoadModel.Loc;
 
@@ -22,19 +16,14 @@ import org.apache.commons.math3.random.RandomGenerator;
 
 import users.VirtualUser;
 
-import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
-import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel.Builder;
-import com.github.rinde.rinsim.event.Event;
-import com.github.rinde.rinsim.event.Listener;
+import com.github.rinde.rinsim.core.model.road.GraphRoadModel;
+import com.github.rinde.rinsim.core.model.road.RoadUser;
 import com.github.rinde.rinsim.geom.Connection;
 import com.github.rinde.rinsim.geom.ConnectionData;
 import com.github.rinde.rinsim.geom.Graph;
-import com.github.rinde.rinsim.geom.ListenableGraph;
 import com.github.rinde.rinsim.geom.Point;
-import com.github.rinde.rinsim.geom.ListenableGraph.GraphEvent;
 import com.google.common.base.Optional;
 import com.google.common.base.VerifyException;
-import com.google.common.primitives.Doubles;
 
 public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 
@@ -231,9 +220,9 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 		return graph.getRandomNode(rnd);
 	}
 
-	public ArrayList<Point> getNeighbors(Point point) {
-		// TODO implement
-		return new ArrayList<Point>();
+	public Collection<Point> getNeighbours(Point point) {
+		Collection<Point> neighbours = graph.getOutgoingConnections(point);
+		return neighbours;
 	}
 
 	/**
