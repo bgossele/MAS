@@ -71,7 +71,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if (started) {
-			ExplorationAnt ant = new ExplorationAnt(lastHop, this, DEFAULT_HOPLIMIT);
+			ExplorationAnt ant = new ExplorationAnt(lastHop, this, DEFAULT_HOPLIMIT, 1);
 			simulator.register(ant);
 			started = false;
 		}

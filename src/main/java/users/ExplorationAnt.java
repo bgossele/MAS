@@ -28,8 +28,9 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser, Simu
 	private Robot mothership;
 	private final int hopLimit;
 	private int hopCounter;
+	public final int id;
 
-	public ExplorationAnt(Point start, Robot mothership, int hopLimit) {
+	public ExplorationAnt(Point start, Robot mothership, int hopLimit, int id) {
 		roadModel = Optional.absent();
 		previousPosition = Optional.absent();
 		position = Optional.of(start);
@@ -38,9 +39,10 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser, Simu
 		this.mothership = mothership;
 		this.hopLimit = hopLimit;
 		hopCounter = 0;
+		this.id = id;
 	}
 
-	public ExplorationAnt(Point start, Point destination, Robot mothership, int hopLimit) {
+	public ExplorationAnt(Point start, Point destination, Robot mothership, int hopLimit, int id) {
 		roadModel = Optional.absent();
 		previousPosition = Optional.absent();
 		position = Optional.of(start);
@@ -49,6 +51,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser, Simu
 		this.mothership = mothership;
 		this.hopLimit = hopLimit;
 		hopCounter = 0;
+		this.id = id;
 	}
 
 	@Override
@@ -61,22 +64,25 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser, Simu
 				Collection<Point> neighbours = roadModel.get().getNeighbours(roadModel.get().getPosition(this));
 				if(neighbours.size() > 1)
 					System.out.println("Ant neighbours = " + neighbours.toString());
+				int childnr = 1;
 				for (Point des : neighbours) {
 					if (des.equals(previousPosition.orNull())) {
 						continue;
 					} else if (destination.equals(Optional.absent())) {
 						destination = Optional.of(des);
 					} else {
+						int new_id = 10 * id + childnr;
+						childnr++;
 						ExplorationAnt ant = new ExplorationAnt(roadModel.get().getPosition(this),
-								des, mothership, hopLimit - hopCounter);
+								des, mothership, hopLimit - hopCounter, new_id);
 						simulator.register(ant);
 					}
 				}
 			} else {
-				System.out.println("Ant destination = " + destination.get().toString());
 				roadModel.get().moveTo(this, destination.get());
 				hopCounter += 1;
 			}
+			System.out.println("Ant " + id + " reporting from " + roadModel.get().getPosition(this));
 			ExplorationReport message = new ExplorationReport(roadModel.get().getPosition(this), roadModel.get().readPheromones(this));
 			device.get().send(message, mothership);
 		} else {
@@ -106,7 +112,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser, Simu
 	public void initVirtualUser(VirtualRoadModel model) {
 		roadModel = Optional.of((PheromoneVirtualGraphRoadModel) model);
 		roadModel.get().addObjectAt(this, position.get());
-		System.out.println("Initialised ant at = " + roadModel.get().getPosition(this).toString());
+		System.out.println("Initialised ant " + id + " at = " + roadModel.get().getPosition(this).toString());
 	}
 
 	@Override
