@@ -3,9 +3,9 @@ import java.util.LinkedList;
 
 import model.road.VirtualGraphRoadModel;
 import model.road.VirtualRoadModel;
-
 import warehouse.Warehouse;
 
+import com.github.rinde.rinsim.core.SimulatorAPI;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
@@ -22,6 +22,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 	private Optional<Point> destination;
 	private LinkedList<Point> path;
 	private Optional<CommDevice> device;
+	private SimulatorAPI simulator;
 
 	public ExplorationAnt(Point start) {
 		roadModel = Optional.absent();
@@ -53,7 +54,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser {
 					destination = Optional.of(des);
 				} else{
 					ExplorationAnt ant = new ExplorationAnt(position.get(), des);
-					Warehouse.getSimulator().register(ant);
+					simulator.register(ant);
 				}
 			}
 		} else {
