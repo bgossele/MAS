@@ -8,6 +8,7 @@ import model.road.PheromoneVirtualGraphRoadModel;
 import users.Robot;
 
 import com.github.rinde.rinsim.core.Simulator;
+import com.github.rinde.rinsim.core.model.comm.CommModel;
 import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
 import com.github.rinde.rinsim.geom.Graph;
 import com.github.rinde.rinsim.geom.Graphs;
@@ -35,7 +36,7 @@ public final class Warehouse {
 	public static void main(String[] args) {
 
 		ListenableGraph<LengthData> g = createSimpleGraph();
-		PheromoneVirtualGraphRoadModel pheromoneVirualModel = new PheromoneVirtualGraphRoadModel(
+		PheromoneVirtualGraphRoadModel pheromoneVirtualModel = new PheromoneVirtualGraphRoadModel(
 				g);
 
 		Simulator sim = Simulator
@@ -43,19 +44,20 @@ public final class Warehouse {
 				.addModel(
 						CollisionGraphRoadModel.builder(g)
 								.setVehicleLength(VEHICLE_LENGTH).build())
-				.addModel(pheromoneVirualModel).build();
+				.addModel(CommModel.builder().build())
+				.addModel(pheromoneVirtualModel).build();
 
 		for (int i = 0; i < 1; i++) {
 			sim.register(new Robot(sim.getRandomGenerator()));
 		}
 
-		sim.addTickListener(pheromoneVirualModel);
+		sim.addTickListener(pheromoneVirtualModel);
 
 		View.create(sim)
 				.with(HybridWarehouseRenderer.builder().setMargin(
 						VEHICLE_LENGTH))
 				.with(AGVRenderer.builder().useDifferentColorsForVehicles())
-				.with(AntRenderer.builder().useDifferentColorsForVehicles())
+				//.with(AntRenderer.builder().useDifferentColorsForVehicles())
 				.show();
 	}
 
