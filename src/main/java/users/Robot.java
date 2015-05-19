@@ -12,6 +12,7 @@ import com.github.rinde.rinsim.core.model.comm.CommDevice;
 import com.github.rinde.rinsim.core.model.comm.CommDeviceBuilder;
 import com.github.rinde.rinsim.core.model.comm.CommUser;
 import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
+import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
@@ -22,6 +23,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser {
 	private Optional<CollisionGraphRoadModel> roadModel;
 	private Optional<Point> destination;
 	private LinkedList<Point> path;
+	private Point lastHop;
 	private Optional<CommDevice> device;
 
 	public Robot(RandomGenerator r) {
@@ -40,7 +42,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser {
 			p = model.getRandomPosition(rng);
 		} while (roadModel.get().isOccupied(p));
 		roadModel.get().addObjectAt(this, p);
-
+		lastHop = p;
+		started = true;
 	}
 
 	@Override
@@ -59,7 +62,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser {
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if(started) {
-			ExplorationAnt ant = new ExplorationAnt(roadModel.get().getPosition(this));
+			ExplorationAnt ant = new ExplorationAnt(lastHop);
 			Warehouse.getSimulator().register(ant);
 		}
 		
@@ -67,7 +70,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser {
 			nextDestination();
 		}
 
-		roadModel.get().followPath(this, path, timeLapse);
+		MoveProgress mp = roadModel.get().followPath(this, path, timeLapse);
+		if (mp.travelledNodes().size() > 0){
+			lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
+		}
 
 		if (roadModel.get().getPosition(this).equals(destination.get())) {
 			nextDestination();

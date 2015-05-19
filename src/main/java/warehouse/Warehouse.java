@@ -4,7 +4,6 @@ import static com.google.common.collect.Lists.newArrayList;
 import java.util.Map;
 
 import model.road.VirtualGraphRoadModel;
-import users.ExplorationAnt;
 import users.Robot;
 
 import com.github.rinde.rinsim.core.Simulator;
@@ -17,7 +16,6 @@ import com.github.rinde.rinsim.geom.Point;
 import com.github.rinde.rinsim.geom.TableGraph;
 import com.github.rinde.rinsim.ui.View;
 import com.github.rinde.rinsim.ui.renderers.AGVRenderer;
-import com.github.rinde.rinsim.ui.renderers.WarehouseRenderer;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
@@ -53,7 +51,6 @@ public final class Warehouse {
 
 		for (int i = 0; i < 1; i++) {
 			sim.register(new Robot(sim.getRandomGenerator()));
-			sim.register(new ExplorationAnt(new Point(0,0)));
 		}
 
 		View.create(sim)

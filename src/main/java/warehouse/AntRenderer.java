@@ -27,6 +27,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import model.road.VirtualGraphRoadModel;
+import model.road.VirtualRoadModelEvent;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -39,7 +40,6 @@ import users.VirtualUser;
 
 import com.github.rinde.rinsim.core.model.ModelProvider;
 import com.github.rinde.rinsim.core.model.road.GenericRoadModel.RoadEventType;
-import com.github.rinde.rinsim.core.model.road.RoadModelEvent;
 import com.github.rinde.rinsim.event.Event;
 import com.github.rinde.rinsim.event.Listener;
 import com.github.rinde.rinsim.geom.Connection;
@@ -107,8 +107,8 @@ public final class AntRenderer implements CanvasRenderer, Listener {
 
 	@Override
 	public void handleEvent(Event e) {
-		verify(e instanceof RoadModelEvent);
-		final RoadModelEvent rme = (RoadModelEvent) e;
+		verify(e instanceof VirtualRoadModelEvent);
+		final VirtualRoadModelEvent rme = (VirtualRoadModelEvent) e;
 		if (rme.roadUser instanceof VirtualUser) {
 			if (e.getEventType() == RoadEventType.ADD_ROAD_USER) {
 				addVehicleUI((VirtualUser) rme.roadUser);
