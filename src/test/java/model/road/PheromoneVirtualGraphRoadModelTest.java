@@ -5,15 +5,16 @@ import static org.junit.Assert.*;
 
 import java.util.List;
 
-import org.junit.Before;
 import org.junit.Test;
 
 import users.AntFactory;
 import users.ExplorationAnt;
+import users.Robot;
 
 import com.github.rinde.rinsim.core.Simulator;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
+import com.github.rinde.rinsim.core.model.comm.CommModel;
 import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
 import com.github.rinde.rinsim.geom.Graph;
 import com.github.rinde.rinsim.geom.Graphs;
@@ -28,13 +29,8 @@ import com.google.common.collect.Table;
 public class PheromoneVirtualGraphRoadModelTest {
 
 	Point point;
+	Robot robot;
 	ExplorationAnt ant;
-
-	@Before
-	public void SetUp() {
-		point = new Point(16, 16);
-		ant = AntFactory.build(point, null, 0, 0);
-	}
 
 	@Test
 	public void test() {
@@ -48,7 +44,7 @@ public class PheromoneVirtualGraphRoadModelTest {
 				.addModel(
 						CollisionGraphRoadModel.builder(g).setVehicleLength(2d)
 								.build()).addModel(pheromoneVirualModel)
-				.build();
+				.addModel(CommModel.builder().build()).build();
 
 		sim.addTickListener(pheromoneVirualModel);
 
@@ -56,6 +52,11 @@ public class PheromoneVirtualGraphRoadModelTest {
 				pheromoneVirualModel, sim);
 
 		sim.addTickListener(listner);
+
+		point = new Point(16, 16);
+		robot = new Robot(sim.getRandomGenerator());
+		sim.register(robot);
+		ant = AntFactory.build(point, robot, 5, 5, sim);
 
 		sim.start();
 	}
@@ -119,7 +120,6 @@ public class PheromoneVirtualGraphRoadModelTest {
 			ticks++;
 			switch (ticks) {
 			case 2:
-				pheromoneVirtualModel.addObjectAt(ant, point);
 				Pheromone pheromone1 = PheromoneFactory.build(0, Move.WAIT,
 						Move.WAIT, 0);
 				Pheromone pheromone2 = PheromoneFactory.build(5, Move.NORTH,
@@ -127,24 +127,39 @@ public class PheromoneVirtualGraphRoadModelTest {
 				pheromoneVirtualModel.dropPheromone(ant, pheromone1);
 				pheromoneVirtualModel.dropPheromone(ant, pheromone2);
 				break;
-			case 4:
-				List<Pheromone> list = pheromoneVirtualModel.readPheromones(ant);
+			case 3:
+				List<Pheromone> list = pheromoneVirtualModel
+						.readPheromones(ant);
 				boolean pheromone1Present = false;
 				boolean pheromone2Present = false;
 				for (Pheromone pheromone : list) {
 					if (pheromone.getTimeStamp() == 0) {
 						pheromone1Present = true;
-						assert (pheromone.getLifeTime() == 2);
+						assert (pheromone.getLifeTime() == 1);
 					} else if (pheromone.getTimeStamp() == 5) {
 						pheromone2Present = true;
-						assert (pheromone.getLifeTime() == 2);
+						assert (pheromone.getLifeTime() == 1);
 					}
 				}
 				if (pheromone1Present == false || pheromone2Present == false) {
 					fail("Pheromone missing");
 				}
 				break;
-			case 5:
+			case 4:
+				List<Pheromone> list2 = pheromoneVirtualModel
+						.readPheromones(ant);
+				boolean pheromone1Present2 = false;
+				boolean pheromone2Present2 = false;
+				for (Pheromone pheromone : list2) {
+					if (pheromone.getTimeStamp() == 0) {
+						pheromone1Present2 = true;
+					} else if (pheromone.getTimeStamp() == 5) {
+						pheromone2Present2 = true;
+					}
+				}
+				if (pheromone1Present2 == true || pheromone2Present2 == true) {
+					fail("Pheromone not Removed");
+				}
 				simulator.stop();
 				break;
 			}
@@ -152,8 +167,6 @@ public class PheromoneVirtualGraphRoadModelTest {
 
 		@Override
 		public void afterTick(TimeLapse timeLapse) {
-			// TODO Auto-generated method stub
-
 		}
 
 	}
