@@ -32,6 +32,7 @@ public class AntFactory {
 	}
 
 	static void returnAnt(ExplorationAnt ant) {
+		ant.reset();
 		unusedAntInstances.add(ant);
 	}
 
