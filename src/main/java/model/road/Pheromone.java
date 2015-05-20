@@ -46,9 +46,13 @@ public class Pheromone {
 	void setRobot(int robot) {
 		this.robot = robot;
 	}
+	
+	public int getLifeTime() {
+		return lifeTime;
+	}
 
-	public int live() {
-		return lifeTime++;
+	public void addTickToLife() {
+		lifeTime++;
 	}
 
 	void resetLife() {

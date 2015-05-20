@@ -44,6 +44,7 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 
 	@Override
 	public void afterTick(TimeLapse timeLapse) {
+		System.out.println("Checking pheromone life");
 		// Update the life of pheromones and remove pheromones if they are
 		// expired.
 		Iterator<List<Pheromone>> pheromoneListIterator = pheromones.values()
@@ -53,9 +54,11 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 					.next().iterator();
 			while (pheromoneIterator.hasNext()) {
 				Pheromone pheromone = pheromoneIterator.next();
-				if (pheromone.live() >= PHEROMONE_LIFETIME) {
+				pheromone.addTickToLife();
+				if (pheromone.getLifeTime() >= PHEROMONE_LIFETIME) {
 					pheromoneIterator.remove();
 					PheromoneFactory.returnPheromone(pheromone);
+					System.out.println("Removing pheromone");
 				}
 			}
 		}
