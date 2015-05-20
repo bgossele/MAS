@@ -48,7 +48,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		this.id = 0;
 	}
 
-	void set(Point start, Robot mothership, int hopLimit, int id) {
+	void set(Point start, Robot mothership, int hopLimit, int id, SimulatorAPI sim) {
 		active = true;
 		roadModel = Optional.absent();
 		previousPosition = Optional.absent();
@@ -59,10 +59,12 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		this.hopLimit = hopLimit;
 		hopCounter = 0;
 		this.id = id;
+		this.simulator = sim;
 	}
 
-	void set(Point start, Point previous, Robot mothership, int hopLimit, int id) {
-		set(start, mothership, hopLimit, id);
+	void set(Point start, Point previous, Robot mothership, int hopLimit, int id, SimulatorAPI sim) {
+		set(start, mothership, hopLimit, id, sim);
+		roadModel.get().addObjectAt(this, start);
 		this.previousPosition = Optional.of(previous);
 	}
 
@@ -97,7 +99,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 					int new_id = 10 * id + childnr;
 					childnr++;
 					ExplorationAnt ant = AntFactory.build(des, getPosition().get(), mothership, hopLimit
-							- hopCounter, new_id);
+							- hopCounter, new_id, simulator);
 					simulator.register(ant);
 				}
 			}
@@ -106,6 +108,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 			hopCounter += 1;			
 		} else {
 			System.out.println("Hoplimit reached");
+			roadModel.get().removeObject(this);
 			AntFactory.returnAnt(this);
 		}
 
@@ -131,7 +134,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 	@Override
 	public void initVirtualUser(VirtualRoadModel model) {
 		roadModel = Optional.of((PheromoneVirtualGraphRoadModel) model);
-		roadModel.get().addObjectAt(this, position.get());
 		System.out.println("Initialised ant " + id + " at = "
 				+ roadModel.get().getPosition(this).toString());
 	}
@@ -139,7 +141,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 	@Override
 	public void setSimulator(SimulatorAPI api) {
 		this.simulator = api;
-
 	}
 
 }

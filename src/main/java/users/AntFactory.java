@@ -13,12 +13,16 @@ public class AntFactory {
 	public static ExplorationAnt build(Point start, Robot mothership,
 			int hopLimit, int id, SimulatorAPI sim) {
 		ExplorationAnt ant = unusedAntInstances.poll();
-		if (ant == null) {
+		boolean freshAnt = (ant == null) ;
+		if (freshAnt) {
 			ant = new ExplorationAnt();
+		} else {
+			ant.reset();
+		}
+		ant.set(start, mothership, hopLimit, id, sim);
+		if(freshAnt) {
 			sim.register(ant);
 		}
-		ant.reset();
-		ant.set(start, mothership, hopLimit, id);
 		return ant;
 	}
 
@@ -30,7 +34,7 @@ public class AntFactory {
 			sim.register(ant);
 		}
 		ant.reset();
-		ant.set(start, destination, mothership, hopLimit, id);
+		ant.set(start, destination, mothership, hopLimit, id, sim);
 		return ant;
 	}
 
