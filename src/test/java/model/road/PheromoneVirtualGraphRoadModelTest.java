@@ -8,6 +8,7 @@ import java.util.List;
 import org.junit.Before;
 import org.junit.Test;
 
+import users.AntFactory;
 import users.ExplorationAnt;
 
 import com.github.rinde.rinsim.core.Simulator;
@@ -32,7 +33,7 @@ public class PheromoneVirtualGraphRoadModelTest {
 	@Before
 	public void SetUp() {
 		point = new Point(16, 16);
-		ant = new ExplorationAnt(point, null, 0, 0);
+		ant = AntFactory.build(point, null, 0, 0);
 	}
 
 	@Test
