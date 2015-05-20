@@ -61,7 +61,7 @@ public final class Warehouse {
 				.show();
 	}
 
-	static ImmutableTable<Integer, Integer, Point> createMatrix(int cols,
+	public static ImmutableTable<Integer, Integer, Point> createMatrix(int cols,
 			int rows, Point offset) {
 		final ImmutableTable.Builder<Integer, Integer, Point> builder = ImmutableTable
 				.builder();
@@ -74,7 +74,7 @@ public final class Warehouse {
 		return builder.build();
 	}
 
-	static ListenableGraph<LengthData> createSimpleGraph() {
+	public static ListenableGraph<LengthData> createSimpleGraph() {
 		final Graph<LengthData> g = new TableGraph<>();
 
 		final Table<Integer, Integer, Point> matrix = createMatrix(8, 6,
@@ -100,7 +100,7 @@ public final class Warehouse {
 		return new ListenableGraph<>(g);
 	}
 
-	static ListenableGraph<LengthData> createGraph() {
+	public static ListenableGraph<LengthData> createGraph() {
 		final Graph<LengthData> g = new TableGraph<>();
 
 		final Table<Integer, Integer, Point> matrix = createMatrix(5, 10,

@@ -23,7 +23,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 	private boolean active;
 	private Optional<PheromoneVirtualGraphRoadModel> roadModel;
 	private Optional<Point> previousPosition;
-	private Optional<Point> position;
 	private Optional<Point> destination;
 	private Optional<CommDevice> device;
 	private SimulatorAPI simulator;
@@ -38,7 +37,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 	void reset() {
 		active = false;
 		previousPosition = Optional.absent();
-		position = Optional.absent();
 		this.destination = Optional.absent();
 		this.mothership = null;
 		this.hopLimit = 0;
@@ -50,7 +48,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 			SimulatorAPI sim) {
 		active = true;
 		previousPosition = Optional.absent();
-		position = Optional.of(start);
 		this.destination = Optional.absent();
 		this.mothership = mothership;
 		this.hopLimit = hopLimit;
@@ -76,8 +73,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 			return;
 		}
 
-		System.out.println("Ant " + id + " reporting from "
-				+ roadModel.get().getPosition(this));
 		ExplorationReport message = new ExplorationReport(getPosition().get(),
 				roadModel.get().readPheromones(this));
 		device.get().send(message, mothership);
@@ -86,9 +81,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 
 			destination = Optional.absent();
 			Collection<Point> neighbours = roadModel.get().getNeighbours(
-					roadModel.get().getPosition(this));
-			if (neighbours.size() > 1)
-				System.out.println("Ant neighbours = " + neighbours.toString());
+					getPosition().get());
 			int childnr = 1;
 			for (Point des : neighbours) {
 				if (des.equals(previousPosition.orNull())) {

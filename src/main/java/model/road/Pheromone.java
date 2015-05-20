@@ -58,4 +58,10 @@ public class Pheromone {
 	void resetLife() {
 		lifeTime = 0;
 	}
+	
+	@Override
+	public String toString(){
+		String s = "Pheromone <" +  timeStamp + " ; " + goal + ">";
+		return s;
+	}
 }

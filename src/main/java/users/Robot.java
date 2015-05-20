@@ -3,6 +3,10 @@ package users;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import model.road.Move;
+import model.road.Pheromone;
+import model.road.PheromoneFactory;
+
 import org.apache.commons.math3.random.RandomGenerator;
 
 import com.github.rinde.rinsim.core.SimulatorAPI;
@@ -20,6 +24,7 @@ import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
+
 import communication.ExplorationReport;
 
 public class Robot implements TickListener, MovingRoadUser, CommUser,
@@ -71,7 +76,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if (started) {
-			ExplorationAnt ant = AntFactory.build(lastHop, this, DEFAULT_HOPLIMIT, 1, simulator);
+			AntFactory.build(lastHop, this, DEFAULT_HOPLIMIT, 1, simulator);
 			started = false;
 		}
 
@@ -82,6 +87,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		MoveProgress mp = roadModel.get().followPath(this, path, timeLapse);
 		if (mp.travelledNodes().size() > 0) {
 			lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
+			System.out.println(lastHop);
 		}
 
 		if (roadModel.get().getPosition(this).equals(destination.get())) {
@@ -89,6 +95,42 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		}
 		
 		readMessages();
+	}
+	
+	public static LinkedList<Pheromone> getPheromones(LinkedList<Point> path, double robotSpeed){
+		LinkedList<Pheromone> res = new LinkedList<Pheromone>();
+		int eta = 0;
+		for (int i = 0; i < path.size(); i++) {
+			Point current = path.get(i);
+			Move move = null;
+			int hop_time;
+			if (i < path.size() - 1) {
+				Point next = path.get(i + 1);
+				double d_x = next.x - current.x;
+				double d_y = next.y - current.y;
+				double dist = Math.abs(d_x) + Math.abs(d_y);
+				hop_time = (int) Math.floor(dist / robotSpeed);
+				if (d_x == 0 && d_y == 0){
+					move = Move.WAIT;
+					hop_time = 1;
+				} else if (d_x > 0) {
+					move = Move.EAST;
+				} else if (d_x < 0) {
+					move = Move.WEST;
+				} else if (d_y > 0) {
+					move = Move.SOUTH;
+				} else if (d_y < 0) {
+					move = Move.NORTH;
+				}
+				res.add(PheromoneFactory.build(eta, null, move, -5));
+				eta += hop_time;
+				
+			} else {
+				move = Move.WAIT;
+				res.add(PheromoneFactory.build(eta, null, move, -5));
+			}
+		}
+		return res;			
 	}
 	
 	private void readMessages() {
