@@ -66,8 +66,8 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		set(start, mothership, hopLimit, id);
 		this.destination = Optional.of(destination);
 	}
-	
-	public int getId(){
+
+	public int getId() {
 		return id;
 	}
 
