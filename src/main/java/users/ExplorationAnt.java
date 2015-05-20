@@ -61,10 +61,9 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		this.id = id;
 	}
 
-	void set(Point start, Point destination, Robot mothership, int hopLimit,
-			int id) {
+	void set(Point start, Point previous, Robot mothership, int hopLimit, int id) {
 		set(start, mothership, hopLimit, id);
-		this.destination = Optional.of(destination);
+		this.previousPosition = Optional.of(previous);
 	}
 
 	public int getId() {
@@ -76,42 +75,38 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		if (active == false) {
 			return;
 		}
+		
+		System.out.println("Ant " + id + " reporting from "	+ roadModel.get().getPosition(this));
+		ExplorationReport message = new ExplorationReport(getPosition().get(), roadModel.get().readPheromones(this));
+		device.get().send(message, mothership);
+		
 		if (hopCounter < hopLimit) {
-			if (destination.equals(Optional.absent())
-					|| destination.get().equals(
-							roadModel.get().getPosition(this))) {
-				destination = Optional.absent();
-				Collection<Point> neighbours = roadModel.get().getNeighbours(
-						roadModel.get().getPosition(this));
-				if (neighbours.size() > 1)
-					System.out.println("Ant neighbours = "
-							+ neighbours.toString());
-				int childnr = 1;
-				for (Point des : neighbours) {
-					if (des.equals(previousPosition.orNull())) {
-						continue;
-					} else if (destination.equals(Optional.absent())) {
-						destination = Optional.of(des);
-					} else {
-						int new_id = 10 * id + childnr;
-						childnr++;
-						ExplorationAnt ant = AntFactory.build(roadModel.get()
-								.getPosition(this), des, mothership, hopLimit
-								- hopCounter, new_id);
-						simulator.register(ant);
-					}
+
+			destination = Optional.absent();
+			Collection<Point> neighbours = roadModel.get().getNeighbours(
+					roadModel.get().getPosition(this));
+			if (neighbours.size() > 1)
+				System.out.println("Ant neighbours = " + neighbours.toString());
+			int childnr = 1;
+			for (Point des : neighbours) {
+				if (des.equals(previousPosition.orNull())) {
+					continue;
+				} else if (destination.equals(Optional.absent())) {
+					destination = Optional.of(des);
+				} else {
+					int new_id = 10 * id + childnr;
+					childnr++;
+					ExplorationAnt ant = AntFactory.build(des, getPosition().get(), mothership, hopLimit
+							- hopCounter, new_id);
+					simulator.register(ant);
 				}
-			} else {
-				roadModel.get().moveTo(this, destination.get());
-				hopCounter += 1;
 			}
-			System.out.println("Ant " + id + " reporting from "
-					+ roadModel.get().getPosition(this));
-			ExplorationReport message = new ExplorationReport(roadModel.get()
-					.getPosition(this), roadModel.get().readPheromones(this));
-			device.get().send(message, mothership);
+
+			roadModel.get().moveTo(this, destination.get());
+			hopCounter += 1;			
 		} else {
 			System.out.println("Hoplimit reached");
+			AntFactory.returnAnt(this);
 		}
 
 	}
