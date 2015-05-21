@@ -1,7 +1,5 @@
 package users;
 
-import java.util.LinkedList;
-
 import model.road.Pheromone;
 import model.road.PheromoneVirtualGraphRoadModel;
 import model.road.VirtualRoadModel;
@@ -15,22 +13,19 @@ import com.github.rinde.rinsim.geom.Point;
 public class ReservationAnt implements VirtualUser, TickListener, SimulatorUser {
 
 	private PheromoneVirtualGraphRoadModel roadModel;
-	private LinkedList<Point> path;
-	private LinkedList<Pheromone> pheromones;
+	private Pheromone pheromone;
 	private Point start;
 	private SimulatorAPI simulator;
 	
-	public void set(Point start, LinkedList<Point> path, LinkedList<Pheromone> pheromones, SimulatorAPI sim) {
-		this.path = path;
+	public void set(Point start, Pheromone pheromone, SimulatorAPI sim) {
 		this.start = start;
-		this.pheromones = pheromones;
+		this.pheromone = pheromone;
 		this.simulator = sim;
 	}
 	
 	void reset(){
-		this.path = null;
 		this.start = null;
-		this.pheromones = null;
+		this.pheromone = null;
 		this.roadModel = null;
 	}
 	
@@ -38,17 +33,10 @@ public class ReservationAnt implements VirtualUser, TickListener, SimulatorUser 
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if(path.isEmpty() == false){
-			Point nextHop = path.pop();
-			Pheromone p = pheromones.pop();
-			roadModel.moveTo(this, nextHop);
-			roadModel.dropPheromone(this, p);
-			System.out.println("Dropped " + p + " at " + nextHop);
-		} else {
+			roadModel.dropPheromone(this, pheromone);
+			System.out.println("Dropped " + pheromone +  " at " + start);
 			simulator.unregister(this);
-			ReservationAntFactory.returnAnt(this);
-		}
-		
+			ReservationAntFactory.returnAnt(this);		
 	}
 
 	@Override
@@ -61,7 +49,6 @@ public class ReservationAnt implements VirtualUser, TickListener, SimulatorUser 
 	public void initVirtualUser(VirtualRoadModel model) {
 		roadModel = (PheromoneVirtualGraphRoadModel) model;	
 		roadModel.addObjectAt(this, start);
-		System.out.println("Reservation ant initialised");
 	}
 
 	@Override

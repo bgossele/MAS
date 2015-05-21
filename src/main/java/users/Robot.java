@@ -2,6 +2,7 @@ package users;
 
 import java.util.Collection;
 import java.util.LinkedList;
+import java.util.List;
 
 import model.road.Move;
 import model.road.Pheromone;
@@ -64,13 +65,15 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	public double getSpeed() {
 		return 0.5;
 	}
-
-	@SuppressWarnings("unchecked")
+	
 	void nextDestination() {
 		destination = Optional.of(roadModel.get().getRandomPosition(rng));
 		path = new LinkedList<>(roadModel.get().getShortestPathTo(this,
 				destination.get()));
-		ReservationAntFactory.build(getPosition().get(), (LinkedList<Point>) path.clone(), getPheromones(path, getSpeed()), simulator);
+		List<Pheromone> pheromones = getPheromones(path, getSpeed());
+		for(int i = 0; i < path.size(); i++){
+			ReservationAntFactory.build(path.get(i), pheromones.get(i), simulator);
+		}
 	}
 
 	private boolean started = false;
