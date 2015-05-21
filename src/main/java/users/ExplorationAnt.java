@@ -91,7 +91,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 				} else {
 					int new_id = 10 * id + childnr;
 					childnr++;
-					AntFactory.build(des, getPosition().get(), mothership,
+					ExplorationAntFactory.build(des, getPosition().get(), mothership,
 							hopLimit - hopCounter, new_id, simulator);
 				}
 			}
@@ -101,7 +101,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		} else {
 			System.out.println("Hoplimit reached");
 			roadModel.get().removeObject(this);
-			AntFactory.returnAnt(this);
+			ExplorationAntFactory.returnAnt(this);
 		}
 
 	}

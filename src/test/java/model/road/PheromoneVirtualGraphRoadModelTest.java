@@ -7,7 +7,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import users.AntFactory;
+import users.ExplorationAntFactory;
 import users.ExplorationAnt;
 import users.Robot;
 
@@ -56,7 +56,7 @@ public class PheromoneVirtualGraphRoadModelTest {
 		point = new Point(16, 16);
 		robot = new Robot(sim.getRandomGenerator());
 		sim.register(robot);
-		ant = AntFactory.build(point, robot, 5, 5, sim);
+		ant = ExplorationAntFactory.build(point, robot, 5, 5, sim);
 
 		sim.start();
 	}

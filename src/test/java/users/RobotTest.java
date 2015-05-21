@@ -87,8 +87,6 @@ public class RobotTest {
 		path.add(new Point(4, 0));
 		path.add(new Point(8, 0));
 		List<Pheromone> pheromones = Robot.getPheromones(path, 1.0);
-		for(Pheromone p: pheromones)
-			System.out.println(p);
 		assertEquals(0, pheromones.get(0).getTimeStamp());
 		assertEquals(4, pheromones.get(1).getTimeStamp());
 		assertEquals(5, pheromones.get(2).getTimeStamp());

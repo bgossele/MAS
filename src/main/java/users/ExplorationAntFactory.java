@@ -6,7 +6,7 @@ import java.util.Queue;
 import com.github.rinde.rinsim.core.SimulatorAPI;
 import com.github.rinde.rinsim.geom.Point;
 
-public class AntFactory {
+public class ExplorationAntFactory {
 
 	private static Queue<ExplorationAnt> unusedAntInstances = new ArrayDeque<ExplorationAnt>();
 

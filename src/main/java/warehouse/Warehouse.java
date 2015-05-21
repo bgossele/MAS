@@ -4,6 +4,7 @@ import static com.google.common.collect.Lists.newArrayList;
 
 import java.util.Map;
 
+import rendering.HybridWarehouseRenderer;
 import model.road.PheromoneVirtualGraphRoadModel;
 import users.Robot;
 

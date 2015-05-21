@@ -62,13 +62,15 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	@Override
 	public double getSpeed() {
-		return 1;
+		return 0.5;
 	}
 
+	@SuppressWarnings("unchecked")
 	void nextDestination() {
 		destination = Optional.of(roadModel.get().getRandomPosition(rng));
 		path = new LinkedList<>(roadModel.get().getShortestPathTo(this,
 				destination.get()));
+		ReservationAntFactory.build(getPosition().get(), (LinkedList<Point>) path.clone(), getPheromones(path, getSpeed()), simulator);
 	}
 
 	private boolean started = false;
@@ -76,7 +78,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if (started) {
-			AntFactory.build(lastHop, this, DEFAULT_HOPLIMIT, 1, simulator);
+			ExplorationAntFactory.build(lastHop, this, DEFAULT_HOPLIMIT, 1, simulator);
 			started = false;
 		}
 
@@ -87,7 +89,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		MoveProgress mp = roadModel.get().followPath(this, path, timeLapse);
 		if (mp.travelledNodes().size() > 0) {
 			lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
-			System.out.println(lastHop);
 		}
 
 		if (roadModel.get().getPosition(this).equals(destination.get())) {
