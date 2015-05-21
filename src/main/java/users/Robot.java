@@ -1,5 +1,6 @@
 package users;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -70,10 +71,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		destination = Optional.of(roadModel.get().getRandomPosition(rng));
 		path = new LinkedList<>(roadModel.get().getShortestPathTo(this,
 				destination.get()));
-		List<Pheromone> pheromones = getPheromones(path, getSpeed());
-		for(int i = 0; i < path.size(); i++){
-			ReservationAntFactory.build(path.get(i), pheromones.get(i), simulator);
-		}
 	}
 
 	private boolean started = false;
@@ -88,6 +85,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		if (!destination.isPresent()) {
 			nextDestination();
 		}
+		
+		sendReservationAnts();
 
 		MoveProgress mp = roadModel.get().followPath(this, path, timeLapse);
 		if (mp.travelledNodes().size() > 0) {
@@ -100,23 +99,30 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		
 		readMessages();
 	}
+
+	private void sendReservationAnts() {
+		List<Point> path_with_origin = (List<Point>) path.clone();
+		if(path.getFirst() != getPosition().get()){
+			path_with_origin.add(0, lastHop);
+		}
+		
+		List<Pheromone> pheromones = getPheromones(path_with_origin);
+		for(int i = 0; i < path_with_origin.size(); i++){
+			ReservationAntFactory.build(path_with_origin.get(i), pheromones.get(i), simulator);
+		}
+	}
 	
-	public static LinkedList<Pheromone> getPheromones(LinkedList<Point> path, double robotSpeed){
-		LinkedList<Pheromone> res = new LinkedList<Pheromone>();
-		int eta = 0;
+	public static List<Pheromone> getPheromones(List<Point> path){
+		ArrayList<Pheromone> res = new ArrayList<Pheromone>();
 		for (int i = 0; i < path.size(); i++) {
 			Point current = path.get(i);
 			Move move = null;
-			int hop_time;
 			if (i < path.size() - 1) {
 				Point next = path.get(i + 1);
 				double d_x = next.x - current.x;
 				double d_y = next.y - current.y;
-				double dist = Math.abs(d_x) + Math.abs(d_y);
-				hop_time = (int) Math.floor(dist / robotSpeed);
 				if (d_x == 0 && d_y == 0){
 					move = Move.WAIT;
-					hop_time = 1;
 				} else if (d_x > 0) {
 					move = Move.EAST;
 				} else if (d_x < 0) {
@@ -126,12 +132,11 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				} else if (d_y < 0) {
 					move = Move.NORTH;
 				}
-				res.add(PheromoneFactory.build(eta, null, move, -5));
-				eta += hop_time;
+				res.add(PheromoneFactory.build(i, null, move, -5));
 				
 			} else {
 				move = Move.WAIT;
-				res.add(PheromoneFactory.build(eta, null, move, -5));
+				res.add(PheromoneFactory.build(i, null, move, -5));
 			}
 		}
 		return res;			
@@ -143,7 +148,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			MessageContents content = message.getContents();
 			if (content instanceof ExplorationReport) {
 				ExplorationReport rep = (ExplorationReport) content;
-				System.out.println("received exploration report for pos " + rep.pos.toString());
 			}
 		}
 	}

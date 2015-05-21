@@ -99,7 +99,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 			roadModel.get().moveTo(this, destination.get());
 			hopCounter += 1;
 		} else {
-			System.out.println("Hoplimit reached");
 			roadModel.get().removeObject(this);
 			ExplorationAntFactory.returnAnt(this);
 		}

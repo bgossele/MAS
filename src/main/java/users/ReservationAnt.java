@@ -34,16 +34,12 @@ public class ReservationAnt implements VirtualUser, TickListener, SimulatorUser 
 	@Override
 	public void tick(TimeLapse timeLapse) {
 			roadModel.dropPheromone(this, pheromone);
-			System.out.println("Dropped " + pheromone +  " at " + start);
 			simulator.unregister(this);
 			ReservationAntFactory.returnAnt(this);		
 	}
 
 	@Override
-	public void afterTick(TimeLapse timeLapse) {
-		// TODO Auto-generated method stub
-		
-	}
+	public void afterTick(TimeLapse timeLapse) {}
 
 	@Override
 	public void initVirtualUser(VirtualRoadModel model) {
