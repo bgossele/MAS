@@ -101,6 +101,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private void sendReservationAnts() {
+		@SuppressWarnings("unchecked")
 		List<Point> path_with_origin = (List<Point>) path.clone();
 		if(path.getFirst() != getPosition().get()){
 			path_with_origin.add(0, lastHop);
