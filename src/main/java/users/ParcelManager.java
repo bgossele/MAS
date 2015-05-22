@@ -10,13 +10,14 @@ import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.geom.Point;
 
-public class PackageManager implements TickListener {
+public class ParcelManager implements TickListener {
 	
 	private VirtualGraphRoadModel model;
 	private final RandomGenerator rng;
 	private SimulatorAPI sim;
+	private int parcelCounter = 1;
 	
-	public PackageManager(VirtualGraphRoadModel m, RandomGenerator rng, Simulator sim){
+	public ParcelManager(VirtualGraphRoadModel m, RandomGenerator rng, Simulator sim){
 		this.model = m;
 		this.rng = rng;
 		this.sim = sim;
@@ -30,7 +31,8 @@ public class PackageManager implements TickListener {
 			do {
 				destination = model.getRandomPosition(rng);
 			} while (destination.equals(start));
-			Package p = new Package(start, destination);
+			Parcel p = new Parcel(parcelCounter, start, destination);
+			parcelCounter++;
 			sim.register(p);
 			System.out.println("Spawned " + p);
 		}
