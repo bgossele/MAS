@@ -6,7 +6,7 @@ import java.util.Map;
 
 import rendering.HybridWarehouseRenderer;
 import model.road.PheromoneVirtualGraphRoadModel;
-import users.PackageManager;
+import users.ParcelManager;
 import users.Robot;
 
 import com.github.rinde.rinsim.core.Simulator;
@@ -54,7 +54,7 @@ public final class Warehouse {
 			sim.register(new Robot(pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator())));
 		}
 		
-		sim.addTickListener(new PackageManager(pheromoneVirtualModel, sim.getRandomGenerator(), sim));
+		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim.getRandomGenerator(), sim));
 
 		sim.addTickListener(pheromoneVirtualModel);
 
