@@ -21,10 +21,10 @@ public class PointTreeTest {
 	}
 	
 	@Test
-	public void getParrentTest() {
-		assert (pointTree1.getParrent() == null);
-		assert (pointTree2.getParrent().equals(pointTree1));
-		assert (pointTree3.getParrent().equals(pointTree2));
+	public void getParentTest() {
+		assert (pointTree1.getParent() == null);
+		assert (pointTree2.getParent().equals(pointTree1));
+		assert (pointTree3.getParent().equals(pointTree2));
 	}
 
 	@Test

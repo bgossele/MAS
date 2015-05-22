@@ -190,7 +190,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		PointTree previousHopTree = nextHopTree;
 		for (int i = depth; i == 0; i--) {
 			path.add(i, previousHopTree.getPoint());
-			previousHopTree = previousHopTree.getParrent();
+			previousHopTree = previousHopTree.getParent();
 		}
 		path.add(depth, nextHopTree.getPoint());
 		return path;

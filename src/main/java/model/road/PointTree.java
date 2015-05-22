@@ -8,7 +8,7 @@ import com.github.rinde.rinsim.geom.Point;
 
 public class PointTree {
 
-	private PointTree parrent;
+	private PointTree parent;
 
 	private Point point;
 
@@ -22,13 +22,13 @@ public class PointTree {
 	}
 
 	public PointTree(PointTree parrent, Point point) {
-		this.parrent = parrent;
+		this.parent = parrent;
 		this.point = point;
-		this.depth = this.parrent.getDepth() + 1;
+		this.depth = this.parent.getDepth() + 1;
 	}
 
-	public PointTree getParrent() {
-		return parrent;
+	public PointTree getParent() {
+		return parent;
 	}
 	
 	public Point getPoint() {
