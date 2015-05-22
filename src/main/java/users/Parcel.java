@@ -3,6 +3,9 @@ package users;
 import java.util.ArrayList;
 import java.util.List;
 
+import model.road.VirtualGraphRoadModel;
+import model.road.VirtualRoadModel;
+
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
@@ -17,7 +20,7 @@ import communication.ParcelAllocation;
 import communication.ParcelBid;
 import communication.ParcelOffer;
 
-public class Parcel implements CommUser, TickListener{
+public class Parcel implements CommUser, TickListener, VirtualUser {
 	
 	private Point position;
 	private Point destination;
@@ -25,6 +28,7 @@ public class Parcel implements CommUser, TickListener{
 	private boolean sold;
 	private boolean forSale;
 	private final int parcel_id;
+	private VirtualGraphRoadModel model;
 
 	Parcel(int parcel_id, Point position, Point destination) {
 		this.position = position;
@@ -87,6 +91,20 @@ public class Parcel implements CommUser, TickListener{
 	@Override
 	public String toString(){
 		return "Parcel " + parcel_id + " @ " + position + " ; destination = " + destination + "; " + (sold? "" : " not" ) + " sold";
+	}
+	
+	public void pickUp(){
+		this.model.removeObject(this);
+	}
+	
+	public void drop(Point pos) {
+		this.model.addObjectAt(this, pos);
+	}
+
+	@Override
+	public void initVirtualUser(VirtualRoadModel model) {
+		this.model = (VirtualGraphRoadModel) model;
+		this.model.addObjectAt(this, position);
 	}
 	
 }
