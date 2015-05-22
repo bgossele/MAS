@@ -1,5 +1,7 @@
 package model.road;
 
+import java.util.Map;
+
 import users.VirtualUser;
 
 import com.github.rinde.rinsim.core.model.Model;
@@ -25,5 +27,7 @@ public interface VirtualRoadModel extends Model<VirtualUser>{
 	   * @return The {@link EventAPI} for this road model.
 	   */
 	  EventAPI getEventAPI();
+
+	  Map<VirtualUser, Point> getObjectsAndPositions();
 	  
 }

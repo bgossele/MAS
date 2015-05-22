@@ -18,7 +18,6 @@ package rendering;
 import static com.google.common.base.Verify.verify;
 import static com.google.common.base.Verify.verifyNotNull;
 
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,7 +69,6 @@ public final class AntRenderer implements CanvasRenderer, Listener {
 	private final RenderHelper helper;
 	private final Map<VirtualUser, VehicleUI> vehicles;
 	private int vehicleCounter;
-	private volatile boolean flag;
 
 	enum VizOptions {
 		COORDINATES, CREATION_NUMBER, VEHICLE_ORIGIN, USE_DIFFERENT_COLORS;
