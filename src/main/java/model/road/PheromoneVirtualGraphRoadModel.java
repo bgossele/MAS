@@ -54,11 +54,11 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 			while (pheromoneIterator.hasNext()) {
 				Pheromone pheromone = pheromoneIterator.next();
 				pheromone.addTickToLife();
-				System.out.println("Pheromone life : " +pheromone.getLifeTime());
+//				System.out.println("Pheromone life : " +pheromone.getLifeTime());
 				if (pheromone.getLifeTime() >= PHEROMONE_LIFETIME) {
 					pheromoneIterator.remove();
 					PheromoneFactory.returnPheromone(pheromone);
-					System.out.println("Removing pheromone");
+//					System.out.println("Removing pheromone");
 				}
 			}
 		}

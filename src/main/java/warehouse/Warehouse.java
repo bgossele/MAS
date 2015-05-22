@@ -2,15 +2,22 @@ package warehouse;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.awt.Color;
 import java.util.Map;
 
+import org.eclipse.swt.graphics.RGB;
+
 import rendering.HybridWarehouseRenderer;
+import rendering.VirtualUserRenderer;
 import model.road.PheromoneVirtualGraphRoadModel;
+import users.ExplorationAnt;
+import users.Parcel;
 import users.ParcelManager;
+import users.ReservationAnt;
 import users.Robot;
+import users.TestRobot;
 
 import com.github.rinde.rinsim.core.Simulator;
-import com.github.rinde.rinsim.core.SimulatorAPI;
 import com.github.rinde.rinsim.core.model.comm.CommModel;
 import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
 import com.github.rinde.rinsim.geom.Graph;
@@ -51,7 +58,7 @@ public final class Warehouse {
 				.addModel(pheromoneVirtualModel).build();
 
 		for (int i = 0; i < 1; i++) {
-			sim.register(new Robot(pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator())));
+			sim.register(new TestRobot(sim.getRandomGenerator()));
 		}
 		
 		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim.getRandomGenerator(), sim));
@@ -62,7 +69,12 @@ public final class Warehouse {
 				.with(HybridWarehouseRenderer.builder().setMargin(
 						VEHICLE_LENGTH))
 				.with(AGVRenderer.builder().useDifferentColorsForVehicles())
-				//.with(AntRenderer.builder().useDifferentColorsForVehicles())
+				.with(VirtualUserRenderer.builder().addTypeToRender(ExplorationAnt.class)
+												//.addTypeToRender(ReservationAnt.class)
+												.addTypeToRender(Parcel.class)
+												.addColorAssociation(ExplorationAnt.class, new RGB(0,0,0))
+												.addColorAssociation(ReservationAnt.class, new RGB(255, 0, 0))
+												.addColorAssociation(Parcel.class, new RGB(0,0,255)))
 				.show();
 	}
 
