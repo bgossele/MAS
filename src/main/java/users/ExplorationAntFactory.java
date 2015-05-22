@@ -4,13 +4,14 @@ import java.util.ArrayDeque;
 import java.util.Queue;
 
 import com.github.rinde.rinsim.core.SimulatorAPI;
+import com.github.rinde.rinsim.core.model.comm.CommUser;
 import com.github.rinde.rinsim.geom.Point;
 
 public class ExplorationAntFactory {
 
 	private static Queue<ExplorationAnt> unusedAntInstances = new ArrayDeque<ExplorationAnt>();
 
-	public static ExplorationAnt build(Point start, Robot mothership,
+	public static ExplorationAnt build(Point start, CommUser mothership,
 			int hopLimit, int id, SimulatorAPI sim) {
 		ExplorationAnt ant = unusedAntInstances.poll();
 		if (ant == null) {
@@ -24,7 +25,7 @@ public class ExplorationAntFactory {
 	}
 
 	public static ExplorationAnt build(Point start, Point destination,
-			Robot mothership, int hopLimit, int id, SimulatorAPI sim) {
+			CommUser mothership, int hopLimit, int id, SimulatorAPI sim) {
 		ExplorationAnt ant = unusedAntInstances.poll();
 		if (ant == null) {
 			ant = new ExplorationAnt();

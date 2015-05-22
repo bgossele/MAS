@@ -26,7 +26,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 	private Optional<Point> destination;
 	private Optional<CommDevice> device;
 	private SimulatorAPI simulator;
-	private Robot mothership;
+	private CommUser mothership;
 	private int hopLimit;
 	private int hopCounter;
 	private int id;
@@ -44,7 +44,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		this.id = 0;
 	}
 
-	void set(Point start, Robot mothership, int hopLimit, int id,
+	void set(Point start, CommUser mothership, int hopLimit, int id,
 			SimulatorAPI sim) {
 		active = true;
 		previousPosition = Optional.absent();
@@ -57,7 +57,7 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		roadModel.get().addObjectAt(this, start);
 	}
 
-	void set(Point start, Point previous, Robot mothership, int hopLimit,
+	void set(Point start, Point previous, CommUser mothership, int hopLimit,
 			int id, SimulatorAPI sim) {
 		set(start, mothership, hopLimit, id, sim);
 		this.previousPosition = Optional.of(previous);
