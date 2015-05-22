@@ -48,13 +48,13 @@ public class PheromoneVirtualGraphRoadModelTest {
 
 		sim.addTickListener(pheromoneVirualModel);
 
-		PheromoneTesterTicketListner listner = new PheromoneTesterTicketListner(
+		PheromoneTesterTickListener listner = new PheromoneTesterTickListener(
 				pheromoneVirualModel, sim);
 
 		sim.addTickListener(listner);
 
 		point = new Point(16, 16);
-		robot = new Robot(sim.getRandomGenerator());
+		robot = new Robot(pheromoneVirualModel.getRandomPosition(sim.getRandomGenerator()));
 		sim.register(robot);
 		ant = ExplorationAntFactory.build(point, robot, 5, 5, sim);
 
@@ -100,7 +100,7 @@ public class PheromoneVirtualGraphRoadModelTest {
 		return new ListenableGraph<>(g);
 	}
 
-	private class PheromoneTesterTicketListner implements TickListener {
+	private class PheromoneTesterTickListener implements TickListener {
 
 		private PheromoneVirtualGraphRoadModel pheromoneVirtualModel;
 
@@ -108,7 +108,7 @@ public class PheromoneVirtualGraphRoadModelTest {
 
 		private int ticks = 0;
 
-		public PheromoneTesterTicketListner(
+		public PheromoneTesterTickListener(
 				PheromoneVirtualGraphRoadModel pheromoneVirtualModel,
 				Simulator simulator) {
 			this.pheromoneVirtualModel = pheromoneVirtualModel;
