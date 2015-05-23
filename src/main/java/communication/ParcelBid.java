@@ -13,4 +13,8 @@ public class ParcelBid implements MessageContents {
 	public int getCost(){
 		return this.cost;
 	}
+	
+	public String toString(){
+		return "ParcelBid; cost = " + cost;
+	}
 }

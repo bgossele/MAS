@@ -58,7 +58,7 @@ public final class Warehouse {
 				.addModel(pheromoneVirtualModel).build();
 
 		for (int i = 0; i < 1; i++) {
-			sim.register(new TestRobot(sim.getRandomGenerator()));
+			sim.register(new TestRobot(pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator())));
 		}
 		
 		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim.getRandomGenerator(), sim));
@@ -69,7 +69,7 @@ public final class Warehouse {
 				.with(HybridWarehouseRenderer.builder().setMargin(
 						VEHICLE_LENGTH))
 				.with(AGVRenderer.builder().useDifferentColorsForVehicles())
-				.with(VirtualUserRenderer.builder().addTypeToRender(ExplorationAnt.class)
+				.with(VirtualUserRenderer.builder()//.addTypeToRender(ExplorationAnt.class)
 												//.addTypeToRender(ReservationAnt.class)
 												.addTypeToRender(Parcel.class)
 												.addColorAssociation(ExplorationAnt.class, new RGB(0,0,0))

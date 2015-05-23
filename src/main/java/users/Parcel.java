@@ -16,6 +16,7 @@ import com.github.rinde.rinsim.core.model.comm.MessageContents;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
+import communication.ParcelAccept;
 import communication.ParcelAllocation;
 import communication.ParcelBid;
 import communication.ParcelOffer;
@@ -42,6 +43,10 @@ public class Parcel implements CommUser, TickListener, VirtualUser {
 	public Optional<Point> getPosition() {
 		return Optional.of(position);
 	}
+	
+	public Point getDestination() {
+		return destination;
+	}
 
 	@Override
 	public void setCommDevice(CommDeviceBuilder builder) {
@@ -50,24 +55,29 @@ public class Parcel implements CommUser, TickListener, VirtualUser {
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if(!sold && !forSale){ // STart auction
+		if(!sold){ // Start auction
 			device.broadcast(new ParcelOffer(position, destination));
 			this.forSale = true;
-		} else if (forSale) {
-			ArrayList<Message> bids = new ArrayList<Message>();
+		}
+		if (forSale) {
+			
+			ArrayList<Message> bids = new ArrayList<Message>();			
 			List<Message> messages = device.getUnreadMessages();
+			
 			for(Message m: messages) {
 				MessageContents content = m.getContents();
 				if(content instanceof ParcelBid){
 					bids.add(m);
+				} else if (content instanceof ParcelAccept) {
+					this.sold = true;
+					this.forSale = false;
 				}
 			}
 			if(bids.size() > 0) {
 				CommUser winner = getBestBidder(bids);
 				device.send(new ParcelAllocation(), winner);
-				this.sold = true;
 			} else {
-				System.out.println("Parcel " + parcel_id + " received no bids.");
+				//System.out.println("Parcel " + parcel_id + " received no bids.");
 			}
 		}
 	}

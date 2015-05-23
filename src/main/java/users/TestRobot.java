@@ -1,15 +1,18 @@
 package users;
 
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Queue;
 
 import model.road.Move;
 import model.road.Pheromone;
 import model.road.PheromoneFactory;
-
-import org.apache.commons.math3.random.RandomGenerator;
+import model.road.PointTree;
 
 import com.github.rinde.rinsim.core.SimulatorAPI;
 import com.github.rinde.rinsim.core.SimulatorUser;
@@ -24,79 +27,86 @@ import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
 import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
+import com.github.rinde.rinsim.geom.ConnectionData;
+import com.github.rinde.rinsim.geom.Graph;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
 import communication.ExplorationReport;
+import communication.ParcelAccept;
+import communication.ParcelAllocation;
+import communication.ParcelBid;
+import communication.ParcelOffer;
 
 public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		SimulatorUser {
 
-	private final RandomGenerator rng;
-	private Optional<CollisionGraphRoadModel> roadModel;
-	private Optional<Point> destination;
+	public static final int DEFAULT_HOP_LIMIT = 10;
+
+	private CollisionGraphRoadModel roadModel;
+	private Point destination;
 	private LinkedList<Point> path;
 	private Point lastHop;
-	private Optional<CommDevice> device;
-	public static final int DEFAULT_HOPLIMIT = 10;
-
+	private CommDevice device;
+	private Map<Point, List<Pheromone>> pheromones;
 	private SimulatorAPI simulator;
+	private Parcel parcel;
+	private boolean acceptedParcel;
+	private boolean pickedUpParcel;
 
-	public TestRobot(RandomGenerator r) {
-		rng = r;
-		roadModel = Optional.absent();
-		destination = Optional.absent();
+	public TestRobot(Point start) {
+		roadModel = null;
+		// Robot will be placed at destination on initialization.
+		destination = start;
 		path = new LinkedList<>();
-		device = Optional.absent();
+		device = null;
+		parcel = null;
+		pheromones = new HashMap<Point, List<Pheromone>>();
 	}
 
 	@Override
 	public void initRoadUser(RoadModel model) {
-		roadModel = Optional.of((CollisionGraphRoadModel) model);
-		Point p;
-		do {
-			p = model.getRandomPosition(rng);
-		} while (roadModel.get().isOccupied(p));
-		roadModel.get().addObjectAt(this, p);
-		lastHop = p;
-		started = true;
+		roadModel = (CollisionGraphRoadModel) model;
+		roadModel.addObjectAt(this, destination);
+		lastHop = destination;
+		destination = null;
 	}
 
 	@Override
 	public double getSpeed() {
 		return 0.5;
 	}
-	
-	void nextDestination() {
-		destination = Optional.of(roadModel.get().getRandomPosition(rng));
-		path = new LinkedList<>(roadModel.get().getShortestPathTo(this,
-				destination.get()));
-	}
-
-	private boolean started = false;
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if (started) {
-			ExplorationAntFactory.build(lastHop, this, DEFAULT_HOPLIMIT, 1, simulator);
-			started = false;
-		}
-
-		if (!destination.isPresent()) {
-			nextDestination();
-		}
+		ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1, simulator);
 		
-		sendReservationAnts();
-
-		MoveProgress mp = roadModel.get().followPath(this, path, timeLapse);
-		if (mp.travelledNodes().size() > 0) {
-			lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
+		if(destination != null) {
+			if(destination.equals(getPosition().get())) {
+				//parcel reached
+				if(!pickedUpParcel) {
+					System.out.println("Pickup");
+					parcel.pickUp();
+					destination = parcel.getDestination();
+					pickedUpParcel = true;
+				} else {
+					System.out.println("Deliver");
+					parcel.drop(getPosition().get());
+					destination = null;
+					parcel = null;
+					pickedUpParcel = false;
+					acceptedParcel = false;
+				}
+			} else {
+				MoveProgress mp = roadModel.followPath(this, path, timeLapse);
+				if (mp.travelledNodes().size() > 0) {
+					lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
+				}
+				if(!lastHop.equals(destination))
+					sendReservationAnts();
+			}
 		}
 
-		if (roadModel.get().getPosition(this).equals(destination.get())) {
-			nextDestination();
-		}
-		
 		readMessages();
 	}
 
@@ -144,30 +154,120 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	}
 	
 	private void readMessages() {
-		Collection<Message> messages = device.get().getUnreadMessages();
-		for (Message message: messages) {
+		Collection<Message> messages = device.getUnreadMessages();
+		ArrayList<Parcel> awardedParcels = new ArrayList<Parcel>();
+		for (Message message : messages) {
 			MessageContents content = message.getContents();
 			if (content instanceof ExplorationReport) {
 				ExplorationReport rep = (ExplorationReport) content;
+				pheromones.put(rep.pos, rep.pheromones);
+			} else if (!acceptedParcel) {
+				if (content instanceof ParcelOffer) {
+					ParcelOffer offer = (ParcelOffer) content;
+					Point des = offer.getPosition();
+					int cost = roadModel.getShortestPathTo(this, des).size();
+					ParcelBid reply = new ParcelBid(cost);
+					device.send(reply, message.getSender());
+				} else if (content instanceof ParcelAllocation) {
+					awardedParcels.add((Parcel) message.getSender());
+				}
 			}
 		}
+		if(awardedParcels.size() > 0) {
+			acceptClosestPackage(awardedParcels);
+		}
+	}
+
+	private void acceptClosestPackage(ArrayList<Parcel> awardedParcels) {
+		int min_cost = Integer.MAX_VALUE;
+		Parcel winner = null;
+		for(Parcel p: awardedParcels) {
+			int cost = roadModel.getShortestPathTo(this, p.getPosition().get()).size();
+			if(cost < min_cost) {
+				winner = p;
+				min_cost = cost;
+			}
+		}
+		device.send(new ParcelAccept(), winner);
+		parcel = winner;
+		acceptedParcel = true;
+		destination = winner.getPosition().get();
 	}
 
 	@Override
 	public void afterTick(TimeLapse timeLapse) {
+		pheromones.clear();
+		readMessages();
+		if(destination != null)
+			path = new LinkedList<>(roadModel.getShortestPathTo(roadModel.getPosition(this), destination));
+	}
+
+	public List<Point> getShortestPathTo(Point from, Point to) {
+		Queue<PointTree> nodesToExpand = new ArrayDeque<PointTree>();
+		PointTree fromTree = new PointTree(from);
+		nodesToExpand.add(fromTree);
+		expandNodes(nodesToExpand, fromTree, to);
+
+		return null;
+	}
+
+	private void expandNodes(Queue<PointTree> nodesToExpand,
+			PointTree fromTree, Point to) {
+		Graph<? extends ConnectionData> graph = roadModel.getGraph();
+		while (true) {
+			PointTree nextExpand = nodesToExpand.poll();
+			for (Point nextHop : graph.getOutgoingConnections(nextExpand
+					.getPoint())) {
+				PointTree nextHopTree = new PointTree(nextExpand, nextHop);
+				nextExpand.addChild(nextHopTree);
+				if (nextHop.equals(to)) {
+					// TODO check for conflict and calculate traversal time.
+					conflictAvoidance(nextHopTree);
+					
+				}
+				nodesToExpand.add(nextHopTree);
+			}
+		}
+
+	}
+
+	private void conflictAvoidance(PointTree nextHopTree) {
+		List<Point> path = constructPath(nextHopTree);
+		int step = 1;
+		while (true) {
+			Point point = path.get(step);
+			List<Pheromone> pheremonesOnPoint = pheromones.get(point);
+			for (Pheromone pheromone : pheremonesOnPoint) {
+				if (pheromone.getTimeStamp() == step) {
+					//TODO check for kind of conflict.
+				}
+			}
+		}
+	}
+
+	private List<Point> constructPath(PointTree nextHopTree) {
+		int depth = nextHopTree.getDepth();
+		List<Point> path = new ArrayList<Point>(depth + 1);
+		PointTree previousHopTree = nextHopTree;
+		for (int i = depth; i == 0; i--) {
+			path.add(i, previousHopTree.getPoint());
+			previousHopTree = previousHopTree.getParent();
+		}
+		path.add(depth, nextHopTree.getPoint());
+		return path;
 	}
 
 	@Override
 	public Optional<Point> getPosition() {
-		if (roadModel.get().containsObject(this)) {
-			return Optional.of(roadModel.get().getPosition(this));
+		if (roadModel.containsObject(this)) {
+			return Optional.of(roadModel.getPosition(this));
 		}
 		return Optional.absent();
 	}
 
 	@Override
 	public void setCommDevice(CommDeviceBuilder builder) {
-		device = Optional.of(builder.build());
+		device = builder.build();
 	}
 
 	@Override

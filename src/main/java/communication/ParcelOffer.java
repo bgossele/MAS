@@ -20,4 +20,8 @@ public class ParcelOffer implements MessageContents {
 	public Point getDestination(){
 		return this.destination;
 	}
+	
+	public String toString(){
+		return "Parcel from " + position + " to " + destination;
+	}
 }
