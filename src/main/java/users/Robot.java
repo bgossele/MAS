@@ -69,7 +69,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1, simulator);
+		ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1,
+				simulator);
 
 		MoveProgress mp = roadModel.followPath(this, path, timeLapse);
 		if (mp.travelledNodes().size() > 0) {
@@ -83,17 +84,18 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	private void sendReservationAnts() {
 		@SuppressWarnings("unchecked")
 		List<Point> path_with_origin = (List<Point>) path.clone();
-		if(path.getFirst() != getPosition().get()){
+		if (path.getFirst() != getPosition().get()) {
 			path_with_origin.add(0, lastHop);
 		}
-		
+
 		List<Pheromone> pheromones = getPheromones(path_with_origin);
-		for(int i = 0; i < path_with_origin.size(); i++){
-			ReservationAntFactory.build(path_with_origin.get(i), pheromones.get(i), simulator);
+		for (int i = 0; i < path_with_origin.size(); i++) {
+			ReservationAntFactory.build(path_with_origin.get(i),
+					pheromones.get(i), simulator);
 		}
 	}
-	
-	public static List<Pheromone> getPheromones(List<Point> path){
+
+	public static List<Pheromone> getPheromones(List<Point> path) {
 		ArrayList<Pheromone> res = new ArrayList<Pheromone>();
 		for (int i = 0; i < path.size(); i++) {
 			Point current = path.get(i);
@@ -102,7 +104,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				Point next = path.get(i + 1);
 				double d_x = next.x - current.x;
 				double d_y = next.y - current.y;
-				if (d_x == 0 && d_y == 0){
+				if (d_x == 0 && d_y == 0) {
 					move = Move.WAIT;
 				} else if (d_x > 0) {
 					move = Move.EAST;
@@ -114,15 +116,45 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					move = Move.NORTH;
 				}
 				res.add(PheromoneFactory.build(i, null, move, -5));
-				
+
 			} else {
 				move = Move.WAIT;
 				res.add(PheromoneFactory.build(i, null, move, -5));
 			}
 		}
-		return res;			
+		return res;
 	}
-	
+
+	public static List<Pheromone> getPheromonesMul(List<PointMul> path) {
+		ArrayList<Pheromone> res = new ArrayList<Pheromone>();
+		for (int i = 0; i < path.size(); i++) {
+			Point current = path.get(i).getPoint();
+			Move move = null;
+			if (i < path.size() - 1) {
+				Point next = path.get(i + 1).getPoint();
+				double d_x = next.x - current.x;
+				double d_y = next.y - current.y;
+				if (d_x == 0 && d_y == 0) {
+					move = Move.WAIT;
+				} else if (d_x > 0) {
+					move = Move.EAST;
+				} else if (d_x < 0) {
+					move = Move.WEST;
+				} else if (d_y > 0) {
+					move = Move.SOUTH;
+				} else if (d_y < 0) {
+					move = Move.NORTH;
+				}
+				res.add(PheromoneFactory.build(i, null, move, -5));
+
+			} else {
+				move = Move.WAIT;
+				res.add(PheromoneFactory.build(i, null, move, -5));
+			}
+		}
+		return res;
+	}
+
 	private void readMessages() {
 		Collection<Message> messages = device.getUnreadMessages();
 		for (Message message : messages) {
@@ -138,10 +170,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	public void afterTick(TimeLapse timeLapse) {
 		pheromones.clear();
 		readMessages();
-		roadModel.getShortestPathTo(roadModel.getPosition(this), destination);
+		path = getShortestPathTo(roadModel.getPosition(this), destination);
 	}
 
-	public List<Point> getShortestPathTo(Point from, Point to) {
+	public LinkedList<Point> getShortestPathTo(Point from, Point to) {
 		Queue<PointTree> nodesToExpand = new ArrayDeque<PointTree>();
 		PointTree fromTree = new PointTree(from);
 		nodesToExpand.add(fromTree);
@@ -162,38 +194,73 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				if (nextHop.equals(to)) {
 					// TODO check for conflict and calculate traversal time.
 					conflictAvoidance(nextHopTree);
-					
+
 				}
 				nodesToExpand.add(nextHopTree);
 			}
 		}
-
 	}
 
 	private void conflictAvoidance(PointTree nextHopTree) {
-		List<Point> path = constructPath(nextHopTree);
+		List<PointMul> pointMuls = constructPointMuls(nextHopTree);
+		List<Pheromone> pheremoneList = getPheromonesMul(pointMuls);
 		int step = 1;
 		while (true) {
-			Point point = path.get(step);
-			List<Pheromone> pheremonesOnPoint = pheromones.get(point);
-			for (Pheromone pheromone : pheremonesOnPoint) {
-				if (pheromone.getTimeStamp() == step) {
-					//TODO check for kind of conflict.
+			Point point = getFromPointMulList(pointMuls, step).getPoint();
+			Pheromone pheromone = pheremoneList.get(step);
+			List<Pheromone> otherPheromonesOnPoint = pheromones.get(point);
+			for (Pheromone otherPheromone : otherPheromonesOnPoint) {
+				if (otherPheromone.getTimeStamp() <= step + 1
+						|| otherPheromone.getTimeStamp() > step - 1) {
+					if (otherPheromone.getGoal().equals(pheromone.getOrigin())) {
+						// Colliding.
+						// TODO backtrack until no more collision. Currently
+						// only one way road systems are supported.
+					} else {
+						pointMuls = insertWaitingSpot(step, pointMuls);
+					}
 				}
 			}
 		}
 	}
+	
+	private PointMul getFromPointMulList(List<PointMul> pointMuls, int step) {
+		int i = 1;
+		while(true) {
+			PointMul pointMul = pointMuls.get(i);
+			step -= pointMul.getMul();
+			if(step <= 0) {
+				return pointMul;
+			}
+		}
+	}
 
-	private List<Point> constructPath(PointTree nextHopTree) {
+	private List<PointMul> constructPointMuls(PointTree nextHopTree) {
 		int depth = nextHopTree.getDepth();
-		List<Point> path = new ArrayList<Point>(depth + 1);
+		List<PointMul> path = new ArrayList<PointMul>(depth + 1);
 		PointTree previousHopTree = nextHopTree;
 		for (int i = depth; i == 0; i--) {
-			path.add(i, previousHopTree.getPoint());
+			path.add(i, new PointMul(previousHopTree.getPoint(), 1);
 			previousHopTree = previousHopTree.getParent();
 		}
-		path.add(depth, nextHopTree.getPoint());
+		path.add(depth, new PointMul(nextHopTree.getPoint(), 1));
 		return path;
+	}
+	
+
+	private List<PointMul> insertWaitingSpot(int step, List<PointMul> pointMuls) {
+		PointMul point = getFromPointMulList(pointMuls, step);
+		If(pointMuls)
+		
+		List<Pheromone> otherPheromoneList = pheromones.get(point);
+		for (Pheromone otherPheromone : otherPheromoneList) {
+			if (otherPheromone.getTimeStamp() <= step + 1
+					|| otherPheromone.getTimeStamp() > step - 1) {
+				insertWaitingSpot(step - 1);
+
+			}
+		}
+
 	}
 
 	@Override
@@ -212,6 +279,30 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	@Override
 	public void setSimulator(SimulatorAPI api) {
 		simulator = api;
+	}
+
+	private class PointMul {
+
+		private final Point point;
+		private int mul;
+
+		public PointMul(Point point, int mul) {
+			this.point = point;
+			this.mul = mul;
+		}
+
+		public final Point getPoint() {
+			return point;
+		}
+
+		public int getMul() {
+			return mul;
+		}
+
+		public void setMul(int mul) {
+			this.mul = mul;
+		}
+
 	}
 
 }
