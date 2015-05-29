@@ -15,7 +15,6 @@ import javax.annotation.Nullable;
 
 import users.VirtualUser;
 
-import com.github.rinde.rinsim.core.model.road.RoadModelEvent;
 import com.github.rinde.rinsim.core.model.road.GenericRoadModel.RoadEventType;
 import com.github.rinde.rinsim.event.EventAPI;
 import com.github.rinde.rinsim.geom.Point;

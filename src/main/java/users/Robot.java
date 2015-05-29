@@ -9,8 +9,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
-import org.apache.commons.math3.analysis.function.Power;
-
 import model.road.Move;
 import model.road.Pheromone;
 import model.road.PheromoneFactory;

@@ -2,7 +2,6 @@ package warehouse;
 
 import static com.google.common.collect.Lists.newArrayList;
 
-import java.awt.Color;
 import java.util.Map;
 
 import org.eclipse.swt.graphics.RGB;
@@ -15,7 +14,6 @@ import users.Parcel;
 import users.ParcelManager;
 import users.ReservationAnt;
 import users.Robot;
-import users.TestRobot;
 
 import com.github.rinde.rinsim.core.Simulator;
 import com.github.rinde.rinsim.core.model.comm.CommModel;
