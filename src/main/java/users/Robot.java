@@ -3,6 +3,7 @@ package users;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,10 @@ import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
 import communication.ExplorationReport;
+import communication.ParcelAccept;
+import communication.ParcelAllocation;
+import communication.ParcelBid;
+import communication.ParcelOffer;
 
 public class Robot implements TickListener, MovingRoadUser, CommUser,
 		SimulatorUser {
@@ -47,6 +52,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	private CommDevice device;
 	private Map<Point, List<Pheromone>> pheromones;
 	private SimulatorAPI simulator;
+	private Parcel parcel;
+	private boolean acceptedParcel;
+	private boolean pickedUpParcel;
 
 	public Robot(Point start) {
 		roadModel = null;
@@ -54,6 +62,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		destination = start;
 		path = new LinkedList<>();
 		device = null;
+		parcel = null;
+		pheromones = new HashMap<Point, List<Pheromone>>();
 	}
 
 	@Override
@@ -73,14 +83,39 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	public void tick(TimeLapse timeLapse) {
 		ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1,
 				simulator);
-
-		MoveProgress mp = roadModel.followPath(this, path, timeLapse);
-		if (mp.travelledNodes().size() > 0) {
-			lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
+		if (destination != null) {
+			if (destination.equals(getPosition().get())) {
+				// parcel reached
+				if (!pickedUpParcel) {
+					System.out.println("Pickup");
+					parcel.pickUp();
+					destination = parcel.getDestination();
+					pickedUpParcel = true;
+				} else {
+					System.out.println("Deliver");
+					parcel.drop(getPosition().get());
+					destination = null;
+					parcel = null;
+					pickedUpParcel = false;
+					acceptedParcel = false;
+				}
+			} else {
+				MoveProgress mp = roadModel.followPath(this, path, timeLapse);
+				if (mp.travelledNodes().size() > 0) {
+					lastHop = mp.travelledNodes().get(
+							mp.travelledNodes().size() - 1);
+				}
+				if (!lastHop.equals(destination))
+					sendReservationAnts();
+			}
 		}
+	}
 
+	@Override
+	public void afterTick(TimeLapse timeLapse) {
+		pheromones.clear();
 		readMessages();
-		sendReservationAnts();
+		path = getShortestPathTo(roadModel.getPosition(this), destination);
 	}
 
 	private void sendReservationAnts() {
@@ -129,50 +164,77 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	public static List<Pheromone> getPheromonesMul(List<PointMul> path) {
 		ArrayList<Pheromone> res = new ArrayList<Pheromone>();
-		for (int i = 0; i < path.size(); i++) {
-			Point current = path.get(i).getPoint();
-			Move move = null;
-			if (i < path.size() - 1) {
-				Point next = path.get(i + 1).getPoint();
-				double d_x = next.x - current.x;
-				double d_y = next.y - current.y;
-				if (d_x == 0 && d_y == 0) {
-					move = Move.WAIT;
-				} else if (d_x > 0) {
-					move = Move.EAST;
-				} else if (d_x < 0) {
-					move = Move.WEST;
-				} else if (d_y > 0) {
-					move = Move.SOUTH;
-				} else if (d_y < 0) {
-					move = Move.NORTH;
-				}
-				res.add(PheromoneFactory.build(i, null, move, -5));
-
-			} else {
+		int i = 0;
+		Move move = null;
+		while (true) {
+			PointMul pointMulCurrent = path.get(i);
+			PointMul pointMulNext = path.get(i + 1);
+			if (pointMulCurrent == null || pointMulNext == null) {
 				move = Move.WAIT;
 				res.add(PheromoneFactory.build(i, null, move, -5));
+				break;
 			}
+			Point current = pointMulCurrent.getPoint();
+			Point next = pointMulCurrent.getPoint();
+			double d_x = next.x - current.x;
+			double d_y = next.y - current.y;
+			if (d_x == 0 && d_y == 0) {
+				move = Move.WAIT;
+			} else if (d_x > 0) {
+				move = Move.EAST;
+			} else if (d_x < 0) {
+				move = Move.WEST;
+			} else if (d_y > 0) {
+				move = Move.SOUTH;
+			} else if (d_y < 0) {
+				move = Move.NORTH;
+			}
+			res.add(PheromoneFactory.build(i, null, move, -5));
+			i++;
 		}
 		return res;
 	}
 
 	private void readMessages() {
 		Collection<Message> messages = device.getUnreadMessages();
+		ArrayList<Parcel> awardedParcels = new ArrayList<Parcel>();
 		for (Message message : messages) {
 			MessageContents content = message.getContents();
 			if (content instanceof ExplorationReport) {
 				ExplorationReport rep = (ExplorationReport) content;
 				pheromones.put(rep.pos, rep.pheromones);
+			} else if (!acceptedParcel) {
+				if (content instanceof ParcelOffer) {
+					ParcelOffer offer = (ParcelOffer) content;
+					Point des = offer.getPosition();
+					int cost = roadModel.getShortestPathTo(this, des).size();
+					ParcelBid reply = new ParcelBid(cost);
+					device.send(reply, message.getSender());
+				} else if (content instanceof ParcelAllocation) {
+					awardedParcels.add((Parcel) message.getSender());
+				}
 			}
+		}
+		if (awardedParcels.size() > 0) {
+			acceptClosestPackage(awardedParcels);
 		}
 	}
 
-	@Override
-	public void afterTick(TimeLapse timeLapse) {
-		pheromones.clear();
-		readMessages();
-		path = getShortestPathTo(roadModel.getPosition(this), destination);
+	private void acceptClosestPackage(ArrayList<Parcel> awardedParcels) {
+		int min_cost = Integer.MAX_VALUE;
+		Parcel winner = null;
+		for (Parcel p : awardedParcels) {
+			int cost = getShortestPathTo(roadModel.getPosition(this),
+					p.getPosition().get()).size();
+			if (cost < min_cost) {
+				winner = p;
+				min_cost = cost;
+			}
+		}
+		device.send(new ParcelAccept(), winner);
+		parcel = winner;
+		acceptedParcel = true;
+		destination = winner.getPosition().get();
 	}
 
 	private LinkedList<Point> getShortestPathTo(Point from, Point to) {
@@ -188,7 +250,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			PointTree fromTree, Point to) {
 		Graph<? extends ConnectionData> graph = roadModel.getGraph();
 		int shortestPathLength = Integer.MAX_VALUE;
-		List <PointMul> shortesPath = null;
+		List<PointMul> shortesPath = null;
 		while (true) {
 			PointTree nextExpand = nodesToExpand.poll();
 			for (Point nextHop : graph.getOutgoingConnections(nextExpand
@@ -205,7 +267,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				}
 				nodesToExpand.add(nextHopTree);
 			}
-			if(nextExpand.getDepth() >= shortestPathLength) {
+			if (nextExpand.getDepth() >= shortestPathLength) {
 				break;
 			}
 		}
@@ -218,7 +280,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		int step = 1;
 		while (true) {
 			Point point = getFromPointMulList(pointMuls, step).getPoint();
-			if(point == null) {
+			if (point == null) {
 				break;
 			}
 			Pheromone pheromone = pheremoneList.get(step);
@@ -255,12 +317,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	private int getLengthPointMulList(List<PointMul> pointMuls) {
 		int length = 0;
-		for(PointMul pointMul : pointMuls) {
+		for (PointMul pointMul : pointMuls) {
 			length += pointMul.getMul();
 		}
 		return length;
 	}
-	
+
 	private List<PointMul> constructPointMuls(PointTree nextHopTree) {
 		int depth = nextHopTree.getDepth();
 		List<PointMul> path = new ArrayList<PointMul>(depth + 1);
@@ -272,13 +334,14 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		path.add(depth, new PointMul(nextHopTree.getPoint(), 1));
 		return path;
 	}
-	
-	private LinkedList<Point> constructListFromPointMuls(List<PointMul> pointMuls) {
+
+	private LinkedList<Point> constructListFromPointMuls(
+			List<PointMul> pointMuls) {
 		int i = 1;
 		LinkedList<Point> points = new LinkedList<Point>();
-		while(true) {
+		while (true) {
 			PointMul pointMul = getFromPointMulList(pointMuls, i);
-			if(pointMul == null) {
+			if (pointMul == null) {
 				break;
 			} else {
 				points.add(pointMul.getPoint());
