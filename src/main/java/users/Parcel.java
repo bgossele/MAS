@@ -6,6 +6,8 @@ import java.util.List;
 import model.road.VirtualGraphRoadModel;
 import model.road.VirtualRoadModel;
 
+import com.github.rinde.rinsim.core.SimulatorAPI;
+import com.github.rinde.rinsim.core.SimulatorUser;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
@@ -19,9 +21,10 @@ import com.google.common.base.Optional;
 import communication.ParcelAccept;
 import communication.ParcelAllocation;
 import communication.ParcelBid;
+import communication.ParcelCancellation;
 import communication.ParcelOffer;
 
-public class Parcel implements CommUser, TickListener, VirtualUser {
+public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUser {
 	
 	private Point position;
 	private Point destination;
@@ -30,6 +33,10 @@ public class Parcel implements CommUser, TickListener, VirtualUser {
 	private boolean forSale;
 	private final int parcel_id;
 	private VirtualGraphRoadModel model;
+	private SimulatorAPI sim;
+	private boolean delivered = false;
+	private boolean pickedUp = false;
+	private int counter = 0;
 
 	Parcel(int parcel_id, Point position, Point destination) {
 		this.position = position;
@@ -37,6 +44,10 @@ public class Parcel implements CommUser, TickListener, VirtualUser {
 		this.sold = false;
 		this.forSale = false;
 		this.parcel_id = parcel_id;
+	}
+	
+	public int getId(){
+		return parcel_id;
 	}
 	
 	@Override
@@ -59,10 +70,12 @@ public class Parcel implements CommUser, TickListener, VirtualUser {
 			device.broadcast(new ParcelOffer(position, destination));
 			this.forSale = true;
 		}
+		
+		List<Message> messages = device.getUnreadMessages();
+		
 		if (forSale) {
 			
-			ArrayList<Message> bids = new ArrayList<Message>();			
-			List<Message> messages = device.getUnreadMessages();
+			ArrayList<Message> bids = new ArrayList<Message>();	
 			
 			for(Message m: messages) {
 				MessageContents content = m.getContents();
@@ -78,6 +91,23 @@ public class Parcel implements CommUser, TickListener, VirtualUser {
 				device.send(new ParcelAllocation(), winner);
 			} else {
 				//System.out.println("Parcel " + parcel_id + " received no bids.");
+			}
+		}
+		
+		if (sold && !pickedUp) {
+			for(Message m: messages) {
+				MessageContents c = m.getContents();
+				if(c instanceof ParcelCancellation) {
+					this.sold = false;
+				}
+			}
+		}
+		
+		if(delivered) {
+			if(counter >= 50) {
+				sim.unregister(this);
+			} else {
+				counter++;
 			}
 		}
 	}
@@ -105,16 +135,23 @@ public class Parcel implements CommUser, TickListener, VirtualUser {
 	
 	public void pickUp(){
 		this.model.removeObject(this);
+		this.pickedUp = true;
 	}
 	
-	public void drop(Point pos) {
+	public void dropAndDeliver(Point pos) {
 		this.model.addObjectAt(this, pos);
+		delivered = true;
 	}
 
 	@Override
 	public void initVirtualUser(VirtualRoadModel model) {
 		this.model = (VirtualGraphRoadModel) model;
 		this.model.addObjectAt(this, position);
+	}
+
+	@Override
+	public void setSimulator(SimulatorAPI api) {
+		this.sim = api;		
 	}
 	
 }

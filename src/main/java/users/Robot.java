@@ -91,7 +91,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					pickedUpParcel = true;
 				} else {
 					System.out.println("Deliver");
-					parcel.drop(getPosition().get());
+					parcel.dropAndDeliver(getPosition().get());
 					destination = null;
 					parcel = null;
 					pickedUpParcel = false;

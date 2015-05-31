@@ -100,7 +100,6 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 				roadModel.get().moveTo(this, destination.get());
 				hopCounter += 1;
 			} else { //dead-end reached, stop exploration
-				System.out.println(id + ": dead-end");
 				hopCounter = hopLimit;
 			}
 		} else {
