@@ -41,7 +41,7 @@ import communication.ParcelOffer;
 public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		SimulatorUser {
 
-	public static final int DEFAULT_HOP_LIMIT = 10;
+	public static final int DEFAULT_HOP_LIMIT = 2;
 
 	private CollisionGraphRoadModel roadModel;
 	private Point destination;
@@ -53,6 +53,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	private Parcel parcel;
 	private boolean acceptedParcel;
 	private boolean pickedUpParcel;
+	private int tickCount = 0;
 
 	public TestRobot(Point start) {
 		roadModel = null;
@@ -79,7 +80,10 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1, simulator);
+		if(tickCount % 11 == 0){
+			ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1, simulator);
+		}
+		tickCount ++;
 		
 		if(destination != null) {
 			if(destination.equals(getPosition().get())) {
@@ -118,7 +122,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		}
 		
 		List<Pheromone> pheromones = getPheromones(path_with_origin);
-		for(int i = 0; i < path_with_origin.size(); i++){
+		for(int i = 0; i < Math.min(path_with_origin.size(), DEFAULT_HOP_LIMIT); i++){
 			ReservationAntFactory.build(path_with_origin.get(i), pheromones.get(i), simulator);
 		}
 	}
