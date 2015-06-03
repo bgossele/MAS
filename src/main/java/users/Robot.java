@@ -84,6 +84,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	public double getSpeed() {
 		return 0.5;
 	}
+	
+	private int getTicksToWait() {
+		return Math.ceil(15 / getSpeed());
+	}
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
@@ -114,7 +118,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			} else if (path != null && path.get(1).equals(getPosition().get())) {
 				lastHop = getPosition().get();
 				path = null;
-				System.out.println(id +": Hop reached - " + lastHop);
+				System.out.println(id +": Hop reached - " + lastHop + " after "  + tickCounter + " ticks");
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
 			}
@@ -265,7 +269,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private LinkedList<Point> getShortestPathTo(Point from, Point to) {
-		System.out.println(id +": searching from " + from + " to " + to);
+//		System.out.println(id +": searching from " + from + " to " + to);
 		if(from.equals(to)) {
 			return null;
 		}
@@ -275,7 +279,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<PointMul> pointMuls = doGetShortestPathTo(nodesToExpand, fromTree,
 				to);
 		LinkedList<Point> path = constructListFromPointMuls(pointMuls);
-		System.out.println("path:" + path);
+//		System.out.println("path:" + path);
 		return path;
 	}
 
@@ -316,10 +320,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			}
 			if (currentNode.getDepth() != searchDepth) {
 				searchDepth = currentNode.getDepth();
-				System.out.println(id + ": searchdepth - " +searchDepth);
+//				System.out.println(id + ": searchdepth - " +searchDepth);
 			}
 		}
-		System.out.println("shortest path length:" + shortestPathLength);
+//		System.out.println("shortest path length:" + shortestPathLength);
 		return shortesPath;
 	}
 
