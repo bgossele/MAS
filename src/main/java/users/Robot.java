@@ -94,13 +94,13 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			if (destination.equals(getPosition().get())) {
 				// parcel reached
 				if (!pickedUpParcel) {
-					
+
 					parcel.pickUp();
 					destination = parcel.getDestination();
 					pickedUpParcel = true;
 					path = null;
 					lastHop = getPosition().get();
-					System.out.println(id +": Pickup - " + lastHop);
+					System.out.println(id + ": Pickup - " + lastHop);
 				} else {
 					parcel.dropAndDeliver(getPosition().get());
 					destination = null;
@@ -109,12 +109,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					acceptedParcel = false;
 					path = null;
 					lastHop = getPosition().get();
-					System.out.println(id +": Deliver - " + lastHop);
+					System.out.println(id + ": Deliver - " + lastHop);
 				}
 			} else if (path != null && path.get(1).equals(getPosition().get())) {
 				lastHop = getPosition().get();
 				path = null;
-				System.out.println(id +": Hop reached - " + lastHop);
+				System.out.println(id + ": Hop reached - " + lastHop);
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
 			}
@@ -261,12 +261,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		parcel = winner;
 		acceptedParcel = true;
 		destination = winner.getPosition().get();
-		System.out.println(id +": packet accepted - " + destination);
+		System.out.println(id + ": packet accepted - " + destination);
 	}
 
 	private LinkedList<Point> getShortestPathTo(Point from, Point to) {
-		System.out.println(id +": searching from " + from + " to " + to);
-		if(from.equals(to)) {
+		System.out.println(id + ": searching from " + from + " to " + to);
+		if (from.equals(to)) {
 			return null;
 		}
 		Queue<PointTree> nodesToExpand = new ArrayDeque<PointTree>();
@@ -275,7 +275,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<PointMul> pointMuls = doGetShortestPathTo(nodesToExpand, fromTree,
 				to);
 		LinkedList<Point> path = constructListFromPointMuls(pointMuls);
-		System.out.println("path:" + path);
+		System.out.println(id +": path:" + path);
 		return path;
 	}
 
@@ -286,7 +286,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<PointMul> shortesPath = null;
 		while (true) {
 			PointTree currentNode = nodesToExpand.poll();
-			if(currentNode == null) {
+			if (currentNode == null) {
 				break;
 			}
 			for (Point nextPoint : graph.getOutgoingConnections(currentNode
@@ -314,12 +314,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					|| currentNode.getDepth() > MAX_SEARCH_DEPTH) {
 				break;
 			}
-			if (currentNode.getDepth() != searchDepth) {
-				searchDepth = currentNode.getDepth();
-				System.out.println(id + ": searchdepth - " +searchDepth);
-			}
+//			if (currentNode.getDepth() != searchDepth) {
+//				searchDepth = currentNode.getDepth();
+//				System.out.println(id + ": searchdepth - " + searchDepth);
+//			}
 		}
-		System.out.println("shortest path length:" + shortestPathLength);
+		System.out.println(id + ": shortest path length:" + shortestPathLength);
 		return shortesPath;
 	}
 
@@ -345,8 +345,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			if (otherPheromonesOnPoint != null) {
 				for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
 					if (otherPheromone.getRobot() != id
-							&& (otherPheromone.getTimeStamp() <= step + 1 || otherPheromone
-									.getTimeStamp() > step - 1)) {
+							&& otherPheromone.getTimeStamp() <= step + 1
+							&& otherPheromone.getTimeStamp() >= step - 1) {
 						if (point.equals(pointMuls.get(0).getPoint())) {
 							return null;
 						}
@@ -502,6 +502,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 		public void setMul(int mul) {
 			this.mul = mul;
+		}
+
+		public String toString() {
+			return "< " + point.toString() + " " + getMul() + " >";
 		}
 
 	}

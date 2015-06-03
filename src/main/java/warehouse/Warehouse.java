@@ -68,7 +68,7 @@ public final class Warehouse {
 						VEHICLE_LENGTH))
 				.with(AGVRenderer.builder().useDifferentColorsForVehicles())
 				.with(VirtualUserRenderer.builder()//.addTypeToRender(ExplorationAnt.class)
-												//.addTypeToRender(ReservationAnt.class)
+												.addTypeToRender(ReservationAnt.class)
 												.addTypeToRender(Parcel.class)
 												.addColorAssociation(ExplorationAnt.class, new RGB(0,0,0))
 												.addColorAssociation(ReservationAnt.class, new RGB(255, 0, 0))
