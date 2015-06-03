@@ -11,7 +11,7 @@ public class ExploredPheromone extends Pheromone{
 		return tick;
 	}
 	
-	public void setTick(int tick) {
+	void setTick(int tick) {
 		this.tick = tick;
 	}
 	
