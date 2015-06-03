@@ -17,6 +17,7 @@ public class ExploredPheromoneFactory {
 		}
 		pheromone.setTick(tick);
 		pheromone.setRobot(robot);
+		pheromone.resetLife();
 		return pheromone;
 	}
 

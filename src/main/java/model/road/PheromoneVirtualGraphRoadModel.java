@@ -26,14 +26,23 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 		super(pGraph);
 	}
 
-	public void dropPheromone(VirtualUser user, PathPheromone pheromone) {
+	public void dropPheromone(VirtualUser user, Pheromone pheromone) {
 		Loc location = objLocs.get(user);
-		List<PathPheromone> list = pathPheromones.get(location);
-		if (list == null) {
-			list = new LinkedList<PathPheromone>();
-			pathPheromones.put(location, list);
+		if (pheromone instanceof PathPheromone) {
+			List<PathPheromone> list = pathPheromones.get(location);
+			if (list == null) {
+				list = new LinkedList<PathPheromone>();
+				pathPheromones.put(location, list);
+			}
+			list.add((PathPheromone) pheromone);
+		} else if(pheromone instanceof ExploredPheromone) {
+			List<ExploredPheromone> list = exploredPheromones.get(location);
+			if (list == null) {
+				list = new LinkedList<ExploredPheromone>();
+				exploredPheromones.put(location, list);
+			}
+			list.add((ExploredPheromone) pheromone);
 		}
-		list.add(pheromone);
 	}
 
 	public List<PathPheromone> readPathPheromones(VirtualUser user) {

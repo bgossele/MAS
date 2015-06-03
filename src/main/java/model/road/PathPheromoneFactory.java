@@ -20,6 +20,7 @@ public class PathPheromoneFactory {
 		pheromone.setOrigin(origin);
 		pheromone.setGoal(goal);
 		pheromone.setRobot(robot);
+		pheromone.resetLife();
 		return pheromone;
 	}
 

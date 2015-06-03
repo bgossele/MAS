@@ -13,7 +13,7 @@ public class ExplorationAntFactory {
 	
 	private static int counter = 0;
 
-	public static ExplorationAnt build(Point start, CommUser mothership,
+	public static ExplorationAnt build(Point start, CommUser mothership, int robotId, int tick,
 			int hopLimit, SimulatorAPI sim) {
 		ExplorationAnt ant = unusedAntInstances.poll();
 		if (ant == null) {
@@ -23,12 +23,12 @@ public class ExplorationAntFactory {
 		} else {
 //			ant.reset();
 		}
-		ant.set(start, mothership, hopLimit, sim);
+		ant.set(start, mothership, robotId, tick, hopLimit, sim);
 		return ant;
 	}
 
 	public static ExplorationAnt build(Point start, Point destination,
-			CommUser mothership, int hopLimit, SimulatorAPI sim) {
+			CommUser mothership, int robotId, int tick, int hopLimit, SimulatorAPI sim) {
 		ExplorationAnt ant = unusedAntInstances.poll();
 		if (ant == null) {
 			ant = new ExplorationAnt(counter);
@@ -37,7 +37,7 @@ public class ExplorationAntFactory {
 		} else {
 //			ant.reset();
 		}
-		ant.set(start, destination, mothership, hopLimit, sim);
+		ant.set(start, destination, mothership, robotId, tick, hopLimit, sim);
 		return ant;
 	}
 

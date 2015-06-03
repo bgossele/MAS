@@ -2,6 +2,10 @@ package users;
 
 import java.util.Collection;
 
+import org.eclipse.swt.internal.gdip.Gdip;
+
+import model.road.ExploredPheromone;
+import model.road.ExploredPheromoneFactory;
 import model.road.PheromoneVirtualGraphRoadModel;
 import model.road.VirtualRoadModel;
 
@@ -27,6 +31,8 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 	private Optional<CommDevice> device;
 	private SimulatorAPI simulator;
 	private CommUser mothership;
+	private int robotId;
+	private int tick;
 	private int hopLimit;
 	private int hopCounter;
 	private final int id;
@@ -40,25 +46,29 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		previousPosition = Optional.absent();
 		this.destination = Optional.absent();
 		this.mothership = null;
+		this.robotId = -1;
+		this.tick = -1;
 		this.hopLimit = 0;
 		hopCounter = 0;
 	}
 
-	void set(Point start, CommUser mothership, int hopLimit,
-			SimulatorAPI sim) {
+	void set(Point start, CommUser mothership, int robotId, int tick,
+			int hopLimit, SimulatorAPI sim) {
 		active = true;
 		previousPosition = Optional.absent();
 		this.destination = Optional.absent();
 		this.mothership = mothership;
+		this.robotId = robotId;
+		this.tick = tick;
 		this.hopLimit = hopLimit;
 		hopCounter = 0;
 		this.simulator = sim;
 		roadModel.get().addObjectAt(this, start);
 	}
 
-	void set(Point start, Point previous, CommUser mothership, int hopLimit,
-			SimulatorAPI sim) {
-		set(start, mothership, hopLimit, sim);
+	void set(Point start, Point previous, CommUser mothership, int robotId,
+			int tick, int hopLimit, SimulatorAPI sim) {
+		set(start, mothership, robotId, tick, hopLimit, sim);
 		this.previousPosition = Optional.of(previous);
 	}
 
@@ -77,7 +87,19 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		device.get().send(message, mothership);
 
 		if (hopCounter < hopLimit) {
-			//if(roadModel.get().readExploredPheromones(this).)
+			for (ExploredPheromone pheromone : roadModel.get()
+					.readExploredPheromones(this)) {
+				if (pheromone.getRobot() == robotId
+						&& pheromone.getTick() == tick) {
+					roadModel.get().removeObject(this);
+					ExplorationAntFactory.returnAnt(this);
+					return;
+				}
+			}
+
+			ExploredPheromone pheromone = ExploredPheromoneFactory.build(tick,
+					robotId);
+			roadModel.get().dropPheromone(this, pheromone);
 
 			destination = Optional.absent();
 			Collection<Point> neighbours = roadModel.get().getNeighbours(
@@ -88,15 +110,16 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 				} else if (destination.equals(Optional.absent())) {
 					destination = Optional.of(des);
 				} else {
-					ExplorationAntFactory.build(des, getPosition().get(), mothership,
-							hopLimit - hopCounter, simulator);
+					ExplorationAntFactory.build(des, getPosition().get(),
+							mothership, robotId, tick, hopLimit - hopCounter,
+							simulator);
 				}
 			}
 
-			if(destination.isPresent()) {
+			if (destination.isPresent()) {
 				roadModel.get().moveTo(this, destination.get());
 				hopCounter += 1;
-			} else { //dead-end reached, stop exploration
+			} else { // dead-end reached, stop exploration
 				hopCounter = hopLimit;
 			}
 		} else {
