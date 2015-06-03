@@ -261,9 +261,11 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		parcel = winner;
 		acceptedParcel = true;
 		destination = winner.getPosition().get();
+		System.out.println(id +": packet accepted - " + destination);
 	}
 
 	private LinkedList<Point> getShortestPathTo(Point from, Point to) {
+		System.out.println(id +": searching from " + from + " to " + to);
 		if(from.equals(to)) {
 			return null;
 		}
@@ -273,6 +275,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<PointMul> pointMuls = doGetShortestPathTo(nodesToExpand, fromTree,
 				to);
 		LinkedList<Point> path = constructListFromPointMuls(pointMuls);
+		System.out.println("path:" + path);
 		return path;
 	}
 
@@ -314,13 +317,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			if (currentNode.getDepth() != searchDepth) {
 				searchDepth = currentNode.getDepth();
 				System.out.println(id + ": searchdepth - " +searchDepth);
-				if(currentNode.getDepth() == 42) {
-					System.out.println("42");
-				}
 			}
 		}
 		System.out.println("shortest path length:" + shortestPathLength);
-		System.out.println("path:" + path);
 		return shortesPath;
 	}
 
