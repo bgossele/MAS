@@ -3,8 +3,6 @@ package users;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.swt.internal.gdip.Gdip;
-
 import model.road.ExploredPheromone;
 import model.road.ExploredPheromoneFactory;
 import model.road.PheromoneVirtualGraphRoadModel;

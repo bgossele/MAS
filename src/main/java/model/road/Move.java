@@ -9,7 +9,7 @@ public enum Move {
 		WAIT.opposite = WAIT;
 		NORTH.opposite = SOUTH;
 		EAST.opposite = WEST;
-		SOUTH.opposite = SOUTH;
+		SOUTH.opposite = NORTH;
 		WEST.opposite = EAST;
 	}
 
