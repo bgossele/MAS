@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Verify.verify;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.annotation.Nullable;
@@ -30,7 +29,7 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 	/**
 	 * A mapping of {@link VirtualUser} to location.
 	 */
-	protected volatile Map<VirtualUser, Loc> objLocs = new HashMap<VirtualUser, Loc>();
+	//protected volatile Map<VirtualUser, Loc> objLocs = new HashMap<VirtualUser, Loc>();
 
 	/**
 	 * Precision.
@@ -58,6 +57,7 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 		checkArgument(graph.containsNode(pos),
 				"Object must be initiated on a crossroad.");
 		super.addObjectAt(newObj, asLoc(pos));
+		
 	}
 
 	@Override
