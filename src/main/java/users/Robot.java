@@ -157,8 +157,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<Point> resPath;
 		if (path == null) {
 			resPath = new LinkedList<Point>();
-			resPath.add(lastHop);
-			resPath.add(lastHop);
+			for (int i = 0; i < 3; i++) {
+				resPath.add(lastHop);
+			}
 		} else {
 			resPath = path;
 		}
@@ -383,7 +384,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 						if (point.equals(pointMuls.get(0).getPoint())) {
 							return null;
 						}
-						if (otherPheromone.getGoal().equals(
+						if (otherPheromone.getGoal().equals( //Head-on collision
 								pheromone.getOrigin())) {
 							int robotId = otherPheromone.getRobot();
 							pointMuls = findBacktrackPoint(pointMuls, robotId,
