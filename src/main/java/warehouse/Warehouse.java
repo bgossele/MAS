@@ -43,7 +43,7 @@ public final class Warehouse {
 	 */
 	public static void main(String[] args) {
 
-		ListenableGraph<LengthData> g = createGraph();
+		ListenableGraph<LengthData> g = createSimpleBiGraph();
 		PheromoneVirtualGraphRoadModel pheromoneVirtualModel = new PheromoneVirtualGraphRoadModel(
 				g);
 
@@ -55,7 +55,7 @@ public final class Warehouse {
 				.addModel(CommModel.builder().build())
 				.addModel(pheromoneVirtualModel).build();
 
-		for (int i = 0; i < 1; i++) {
+		for (int i = 0; i < 2; i++) {
 			sim.register(new Robot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator())));
 		}
 		
@@ -108,6 +108,32 @@ public final class Warehouse {
 
 		Graphs.addPath(g, matrix.row(0).values());
 		Graphs.addPath(
+				g,
+				Lists.reverse(newArrayList(matrix.row(
+						matrix.rowKeySet().size() - 1).values())));
+
+		return new ListenableGraph<>(g);
+	}
+	
+	public static ListenableGraph<LengthData> createSimpleBiGraph() {
+		final Graph<LengthData> g = new TableGraph<>();
+
+		final Table<Integer, Integer, Point> matrix = createMatrix(8, 6,
+				new Point(0, 0));
+
+		for (int i = 0; i < matrix.columnMap().size(); i++) {
+
+			Iterable<Point> path;
+			if (i % 2 == 0) {
+				path = Lists.reverse(newArrayList(matrix.column(i).values()));
+			} else {
+				path = matrix.column(i).values();
+			}
+			Graphs.addBiPath(g, path);
+		}
+
+		Graphs.addBiPath(g, matrix.row(0).values());
+		Graphs.addBiPath(
 				g,
 				Lists.reverse(newArrayList(matrix.row(
 						matrix.rowKeySet().size() - 1).values())));
