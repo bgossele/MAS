@@ -1,6 +1,7 @@
 package users;
 
 import java.util.Collection;
+import java.util.List;
 
 import org.eclipse.swt.internal.gdip.Gdip;
 
@@ -87,13 +88,17 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		device.get().send(message, mothership);
 
 		if (hopCounter < hopLimit) {
-			for (ExploredPheromone pheromone : roadModel.get()
-					.readExploredPheromones(this)) {
-				if (pheromone.getRobot() == robotId
-						&& pheromone.getTick() == tick) {
-					roadModel.get().removeObject(this);
-					ExplorationAntFactory.returnAnt(this);
-					return;
+			List<ExploredPheromone> pheromoneList = roadModel.get()
+					.readExploredPheromones(this);
+			if (pheromoneList != null) {
+				for (ExploredPheromone pheromone : roadModel.get()
+						.readExploredPheromones(this)) {
+					if (pheromone.getRobot() == robotId
+							&& pheromone.getTick() == tick) {
+						roadModel.get().removeObject(this);
+						ExplorationAntFactory.returnAnt(this);
+						return;
+					}
 				}
 			}
 

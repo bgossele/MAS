@@ -87,7 +87,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		tickCounter++;
-		ExplorationAntFactory.build(lastHop, this, id, tickCounter, DEFAULT_HOP_LIMIT, simulator);
+		ExplorationAntFactory.build(lastHop, this, id, tickCounter,
+				DEFAULT_HOP_LIMIT, simulator);
 		if (destination != null) {
 			if (destination.equals(getPosition().get())) {
 				// parcel reached
@@ -128,6 +129,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		readMessages();
 		if (path == null && destination != null) {
 			checkedPath = false;
+			System.out.println("lastHop:" + lastHop);
+			System.out.println("destination" + destination);
 			path = getShortestPathTo(lastHop, destination);
 		} else if (!checkedPath) {
 			checkedPath();
@@ -174,14 +177,14 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				} else if (d_y < 0) {
 					move = Move.NORTH;
 				}
-				res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(),
-						move, -5));
+				res.add(PathPheromoneFactory.build(i,
+						previousMove.getOpposite(), move, -5));
 				previousMove = move;
 
 			} else {
 				move = Move.WAIT;
-				res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(),
-						move, -5));
+				res.add(PathPheromoneFactory.build(i,
+						previousMove.getOpposite(), move, -5));
 			}
 		}
 		return res;
@@ -209,12 +212,13 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			} else if (d_y < 0) {
 				move = Move.NORTH;
 			}
-			res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(), move,
-					-5));
+			res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(),
+					move, -5));
 			previousMove = move;
 		}
 		move = Move.WAIT;
-		res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(), move, -5));
+		res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(), move,
+				-5));
 		return res;
 	}
 
@@ -301,6 +305,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				break;
 			}
 		}
+		System.out.println("shortest path lenth:" + shortestPathLength);
 		return shortesPath;
 	}
 
@@ -315,8 +320,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			List<PathPheromone> otherPheromonesOnPoint = pheromones.get(point);
 			if (otherPheromonesOnPoint != null) {
 				for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
-					if (otherPheromone.getTimeStamp() <= step + 1
-							|| otherPheromone.getTimeStamp() > step - 1) {
+					if (otherPheromone.getRobot() != id
+							&& (otherPheromone.getTimeStamp() <= step + 1 || otherPheromone
+									.getTimeStamp() > step - 1)) {
 						if (point.equals(pointMuls.get(0).getPoint())) {
 							return null;
 						}
@@ -325,7 +331,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 							int robotId = otherPheromone.getRobot();
 							pointMuls = findBacktrackPoint(pointMuls, robotId,
 									pheremoneList, step);
-							if(pointMuls == null) {
+							if (pointMuls == null) {
 								return null;
 							}
 						} else {
@@ -342,26 +348,26 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		return pointMuls;
 	}
 
-	private List<PointMul> findBacktrackPoint(List<PointMul> pointMuls, int robotId,
-			List<PathPheromone> pheromoneList, int step) {
+	private List<PointMul> findBacktrackPoint(List<PointMul> pointMuls,
+			int robotId, List<PathPheromone> pheromoneList, int step) {
 		while (true) {
 			PathPheromone pheromone = pheromoneList.get(step);
 			Point point = getFromPointMulList(pointMuls, step).getPoint();
 			PathPheromone otherPheromone = getPheremoneWithRobotId(
 					pheromones.get(point), robotId);
-			if(point.equals(pointMuls.get(0))) {
+			if (point.equals(pointMuls.get(0))) {
 				return null;
-			} else if(otherPheromone.getGoal().equals(pheromone.getOrigin())) {
+			} else if (otherPheromone.getGoal().equals(pheromone.getOrigin())) {
 				step--;
 			} else {
 				int waitingTime = otherPheromone.getTimeStamp();
-				PointMul waitingSpot = getFromPointMulList(pointMuls, step-1);
+				PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
 				boolean waitingInserted = false;
-				for(PointMul pointMul : pointMuls) {
-					if(waitingInserted) {
+				for (PointMul pointMul : pointMuls) {
+					if (waitingInserted) {
 						pointMul.setMul(1);
-					} else if(pointMul.equals(waitingSpot)){
-						pointMul.setMul(waitingTime+1);
+					} else if (pointMul.equals(waitingSpot)) {
+						pointMul.setMul(waitingTime + 1);
 					} else {
 						waitingTime -= pointMul.getMul();
 					}
