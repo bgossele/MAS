@@ -26,6 +26,7 @@ import model.road.VirtualRoadModel;
 import users.ReservationAnt;
 import users.VirtualUser;
 
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.GC;
 import org.eclipse.swt.graphics.Image;
@@ -56,6 +57,12 @@ public final class VirtualUserRenderer implements ModelRenderer {
 	private final UiSchema uiSchema;
 	private final Optional<ViewRect> viewRect;
 	private final Set<String> typesToRender;
+	
+	private final int[] colors = {SWT.COLOR_BLUE,
+		      SWT.COLOR_RED, SWT.COLOR_GREEN, SWT.COLOR_CYAN, SWT.COLOR_MAGENTA,
+		      SWT.COLOR_YELLOW, SWT.COLOR_DARK_BLUE, SWT.COLOR_DARK_RED,
+		      SWT.COLOR_DARK_GREEN, SWT.COLOR_DARK_CYAN, SWT.COLOR_DARK_MAGENTA,
+		      SWT.COLOR_DARK_YELLOW};
 
 	/**
 	 * @deprecated Use {@link #builder()} instead.
@@ -120,10 +127,8 @@ public final class VirtualUserRenderer implements ModelRenderer {
 					Color color = null;
 					if(entry.getKey() instanceof ReservationAnt) {
 						ReservationAnt ant = (ReservationAnt) entry.getKey();
-						if (ant.getRobotId() == 0) {
-							color = new Color(gc.getDevice(), new RGB(0, 0, 255));
-						} else if (ant.getRobotId() == 1) {
-							color = new Color(gc.getDevice(), new RGB(255, 0, 0));
+						if (ant.getRobotId() < colors.length) {
+							color = gc.getDevice().getSystemColor(colors[ant.getRobotId()]);
 						} else {
 							color = uiSchema.getColor(type);
 						}
