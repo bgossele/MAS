@@ -125,8 +125,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
 			}
-			sendReservationAnts();
 		}
+		sendReservationAnts();
 	}
 
 	@Override
@@ -162,7 +162,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			}
 		} else {
 			resPath = path;
-			for(int i = path.size(); i < 6; i++) {
+			for (int i = path.size(); i < 6; i++) {
 				resPath.add(path.getLast());
 			}
 		}
@@ -171,7 +171,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			ReservationAntFactory.build(resPath.get(i), pheromones.get(i),
 					simulator, id);
 		}
-		
+
 	}
 
 	public List<PathPheromone> getPheromones(List<Point> path) {
@@ -388,7 +388,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 						if (point.equals(pointMuls.get(0).getPoint())) {
 							return null;
 						}
-						if (otherPheromone.getGoal().equals( //Head-on collision
+						if (otherPheromone.getGoal().equals( // Head-on
+																// collision
 								pheromone.getOrigin())) {
 							int robotId = otherPheromone.getRobot();
 							pointMuls = findBacktrackPoint(pointMuls, robotId,
@@ -415,9 +416,11 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		int waitingTime = 0;
 		Boolean collissionEndFound = false;
 		while (!collissionEndFound) {
+			System.out.println("1w");
 			PathPheromone pheromone = pheromoneList.get(step);
 			Point point = getFromPointMulList(pointMuls, step).getPoint();
 			for (PathPheromone otherPheromone : pheromones.get(point)) {
+				System.out.println("1f");
 				if (otherPheromone.getRobot() == robotId) {
 					if (point.equals(pointMuls.get(0).getPoint())) {
 						return null;
@@ -438,7 +441,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
 		boolean waitingInserted = false;
 		for (PointMul pointMul : pointMuls) {
-			if (!waitingInserted) {
+			System.out.println("2de");
+			if (waitingInserted) {
 				pointMul.setMul(1);
 			} else if (pointMul.equals(waitingSpot)) {
 				pointMul.setMul(waitingTime + 1);
@@ -447,6 +451,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				waitingTime -= pointMul.getMul();
 			}
 		}
+		System.out.println(pointMuls);
 		return pointMuls;
 	}
 
