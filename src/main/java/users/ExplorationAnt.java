@@ -136,6 +136,14 @@ public class ExplorationAnt extends Ant implements TickListener, VirtualUser, Co
 	public void setCommDevice(CommDeviceBuilder builder) {
 		device = Optional.of(builder.build());
 	}
+	
+	@Override
+	public Optional<Point> getPosition() {
+		if (roadModel.get().containsObject(this)) {
+			return Optional.of(roadModel.get().getPosition(this));
+		}
+		return Optional.absent();
+	}
 
 	@Override
 	public void initVirtualUser(VirtualRoadModel model) {

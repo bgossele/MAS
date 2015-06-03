@@ -70,9 +70,9 @@ public final class Warehouse {
 				.with(VirtualUserRenderer.builder()//.addTypeToRender(ExplorationAnt.class)
 												.addTypeToRender(ReservationAnt.class)
 												.addTypeToRender(Parcel.class)
-												.addColorAssociation(ExplorationAnt.class, new RGB(0,0,0))
+												.addColorAssociation(ExplorationAnt.class, new RGB(0,0,255))
 												.addColorAssociation(ReservationAnt.class, new RGB(255, 0, 0))
-												.addColorAssociation(Parcel.class, new RGB(0,0,255)))
+												.addColorAssociation(Parcel.class, new RGB(0,0,0)))
 				.show();
 	}
 
