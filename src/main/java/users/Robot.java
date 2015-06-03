@@ -41,6 +41,8 @@ import communication.ParcelOffer;
 public class Robot implements TickListener, MovingRoadUser, CommUser,
 		SimulatorUser {
 
+	private int searchDepth = 0;
+
 	public static final int DEFAULT_HOP_LIMIT = 10;
 
 	public static final int MAX_SEARCH_DEPTH = 500;
@@ -261,6 +263,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private LinkedList<Point> getShortestPathTo(Point from, Point to) {
+		if(from.equals(to)) {
+			return null;
+		}
 		Queue<PointTree> nodesToExpand = new ArrayDeque<PointTree>();
 		PointTree fromTree = new PointTree(from);
 		nodesToExpand.add(fromTree);
@@ -277,32 +282,55 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<PointMul> shortesPath = null;
 		while (true) {
 			PointTree currentNode = nodesToExpand.poll();
+			if(currentNode == null) {
+				break;
+			}
 			for (Point nextPoint : graph.getOutgoingConnections(currentNode
 					.getPoint())) {
 				PointTree nextNode = new PointTree(currentNode, nextPoint);
-				currentNode.addChild(nextNode);
-				if (nextPoint.equals(to)) {
-					List<PointMul> possiblePath = conflictAvoidance(nextNode);
-					int possiblelength;
-					if (possiblePath == null) {
-						possiblelength = Integer.MAX_VALUE;
-					} else {
-						possiblelength = getLengthPointMulList(possiblePath);
+				if (!containsPoint(currentNode, nextNode.getPoint())) {
+					currentNode.addChild(nextNode);
+					if (nextPoint.equals(to)) {
+						List<PointMul> possiblePath = conflictAvoidance(nextNode);
+						int possiblelength;
+						if (possiblePath == null) {
+							possiblelength = Integer.MAX_VALUE;
+						} else {
+							possiblelength = getLengthPointMulList(possiblePath);
+						}
+						if (possiblelength < shortestPathLength) {
+							shortesPath = possiblePath;
+							shortestPathLength = possiblelength;
+						}
 					}
-					if (possiblelength < shortestPathLength) {
-						shortesPath = possiblePath;
-						shortestPathLength = possiblelength;
-					}
+					nodesToExpand.add(nextNode);
 				}
-				nodesToExpand.add(nextNode);
 			}
 			if (currentNode.getDepth() == shortestPathLength
 					|| currentNode.getDepth() > MAX_SEARCH_DEPTH) {
 				break;
 			}
+			if (currentNode.getDepth() != searchDepth) {
+				searchDepth = currentNode.getDepth();
+				System.out.println(searchDepth);
+				if(currentNode.getDepth() == 42) {
+					System.out.println("42");
+				}
+			}
 		}
-		System.out.println("shortest path lenth:" + shortestPathLength);
+		System.out.println("shortest path length:" + shortestPathLength);
+		System.out.println("path:" + path);
 		return shortesPath;
+	}
+
+	private static boolean containsPoint(PointTree tree, Point point) {
+		if (tree.getPoint().equals(point)) {
+			return true;
+		} else if (tree.getDepth() != 0) {
+			return containsPoint(tree.getParent(), point);
+		} else {
+			return false;
+		}
 	}
 
 	private List<PointMul> conflictAvoidance(PointTree nextHopTree) {
