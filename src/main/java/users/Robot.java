@@ -84,6 +84,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	public double getSpeed() {
 		return 0.5;
 	}
+	
+	private int getTicksToWait() {
+		return (int) Math.round(Math.ceil(15 / getSpeed()));
+	}
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
@@ -114,7 +118,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			} else if (path != null && path.get(1).equals(getPosition().get())) {
 				lastHop = getPosition().get();
 				path = null;
-				System.out.println(id + ": Hop reached - " + lastHop);
+				System.out.println(id +": Hop reached - " + lastHop + " after "  + tickCounter + " ticks");
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
 			}
