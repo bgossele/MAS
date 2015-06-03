@@ -10,30 +10,34 @@ import com.github.rinde.rinsim.geom.Point;
 public class ExplorationAntFactory {
 
 	private static Queue<ExplorationAnt> unusedAntInstances = new ArrayDeque<ExplorationAnt>();
+	
+	private static int counter = 0;
 
 	public static ExplorationAnt build(Point start, CommUser mothership,
-			int hopLimit, int id, SimulatorAPI sim) {
+			int hopLimit, SimulatorAPI sim) {
 		ExplorationAnt ant = unusedAntInstances.poll();
 		if (ant == null) {
-			ant = new ExplorationAnt();
+			ant = new ExplorationAnt(counter);
+			counter ++;
 			sim.register(ant);
 		} else {
 //			ant.reset();
 		}
-		ant.set(start, mothership, hopLimit, id, sim);
+		ant.set(start, mothership, hopLimit, sim);
 		return ant;
 	}
 
 	public static ExplorationAnt build(Point start, Point destination,
-			CommUser mothership, int hopLimit, int id, SimulatorAPI sim) {
+			CommUser mothership, int hopLimit, SimulatorAPI sim) {
 		ExplorationAnt ant = unusedAntInstances.poll();
 		if (ant == null) {
-			ant = new ExplorationAnt();
+			ant = new ExplorationAnt(counter);
+			counter ++;
 			sim.register(ant);
 		} else {
 //			ant.reset();
 		}
-		ant.set(start, destination, mothership, hopLimit, id, sim);
+		ant.set(start, destination, mothership, hopLimit, sim);
 		return ant;
 	}
 

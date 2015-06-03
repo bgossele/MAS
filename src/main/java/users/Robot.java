@@ -83,8 +83,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1,
-				simulator);
+		ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, simulator);
 		if (destination != null) {
 			if (destination.equals(getPosition().get())) {
 				// parcel reached

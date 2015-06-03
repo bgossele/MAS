@@ -82,7 +82,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if(tickCount % 11 == 0){
-			ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1, simulator);
+			ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, simulator);
 		}
 		tickCount ++;
 		
