@@ -5,22 +5,22 @@ import model.road.PheromoneVirtualGraphRoadModel;
 import model.road.VirtualRoadModel;
 
 import com.github.rinde.rinsim.core.SimulatorAPI;
-import com.github.rinde.rinsim.core.SimulatorUser;
-import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.geom.Point;
+import com.google.common.base.Optional;
 
-public class ReservationAnt implements VirtualUser, TickListener, SimulatorUser {
+public class ReservationAnt extends Ant {
 
-	private PheromoneVirtualGraphRoadModel roadModel;
+	
 	private PathPheromone pheromone;
 	private Point start;
 	private SimulatorAPI simulator;
 	
-	public void set(Point start, PathPheromone pheromone, SimulatorAPI sim) {
+	public void set(Point start, PathPheromone pheromone, SimulatorAPI sim, int robotId) {
 		this.start = start;
 		this.pheromone = pheromone;
 		this.simulator = sim;
+		this.robotId  = robotId;
 	}
 	
 	void reset(){
@@ -33,23 +33,15 @@ public class ReservationAnt implements VirtualUser, TickListener, SimulatorUser 
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-			roadModel.dropPheromone(this, pheromone);
+			roadModel.get().dropPheromone(this, pheromone);
 			simulator.unregister(this);
 			ReservationAntFactory.returnAnt(this);		
 	}
 
 	@Override
-	public void afterTick(TimeLapse timeLapse) {}
-
-	@Override
 	public void initVirtualUser(VirtualRoadModel model) {
-		roadModel = (PheromoneVirtualGraphRoadModel) model;	
-		roadModel.addObjectAt(this, start);
-	}
-
-	@Override
-	public void setSimulator(SimulatorAPI api) {
-		simulator = api;		
+		roadModel = Optional.of((PheromoneVirtualGraphRoadModel) model);	
+		roadModel.get().addObjectAt(this, start);
 	}
 
 }

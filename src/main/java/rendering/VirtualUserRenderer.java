@@ -23,6 +23,7 @@ import java.util.Set;
 import javax.annotation.Nullable;
 
 import model.road.VirtualRoadModel;
+import users.ReservationAnt;
 import users.VirtualUser;
 
 import org.eclipse.swt.graphics.Color;
@@ -116,7 +117,19 @@ public final class VirtualUserRenderer implements ModelRenderer {
 					final int offsetY = y - image.getBounds().height / 2;
 					gc.drawImage(image, offsetX, offsetY);
 				} else {
-					final Color color = uiSchema.getColor(type);
+					Color color = null;
+					if(entry.getKey() instanceof ReservationAnt) {
+						ReservationAnt ant = (ReservationAnt) entry.getKey();
+						if (ant.getRobotId() == 0) {
+							color = new Color(gc.getDevice(), new RGB(0, 0, 255));
+						} else if (ant.getRobotId() == 1) {
+							color = new Color(gc.getDevice(), new RGB(255, 0, 0));
+						} else {
+							color = uiSchema.getColor(type);
+						}
+					} else {
+						color = uiSchema.getColor(type);
+					}
 					if (color == null) {
 						continue;
 					}

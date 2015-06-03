@@ -161,7 +161,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<PathPheromone> pheromones = getPheromones(path_with_origin);
 		for (int i = 0; i < path_with_origin.size(); i++) {
 			ReservationAntFactory.build(path_with_origin.get(i),
-					pheromones.get(i), simulator);
+					pheromones.get(i), simulator, id);
 		}
 	}
 
