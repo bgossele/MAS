@@ -438,10 +438,11 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
 		boolean waitingInserted = false;
 		for (PointMul pointMul : pointMuls) {
-			if (waitingInserted) {
+			if (!waitingInserted) {
 				pointMul.setMul(1);
 			} else if (pointMul.equals(waitingSpot)) {
 				pointMul.setMul(waitingTime + 1);
+				waitingInserted = true;
 			} else {
 				waitingTime -= pointMul.getMul();
 			}
