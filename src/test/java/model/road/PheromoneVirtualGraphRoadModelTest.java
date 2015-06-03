@@ -129,7 +129,7 @@ public class PheromoneVirtualGraphRoadModelTest {
 				break;
 			case 3:
 				List<PathPheromone> list = pheromoneVirtualModel
-						.readPheromones(ant);
+						.readPathPheromones(ant);
 				boolean pheromone1Present = false;
 				boolean pheromone2Present = false;
 				for (PathPheromone pheromone : list) {
@@ -147,7 +147,7 @@ public class PheromoneVirtualGraphRoadModelTest {
 				break;
 			case 4:
 				List<PathPheromone> list2 = pheromoneVirtualModel
-						.readPheromones(ant);
+						.readPathPheromones(ant);
 				boolean pheromone1Present2 = false;
 				boolean pheromone2Present2 = false;
 				for (PathPheromone pheromone : list2) {

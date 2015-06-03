@@ -73,10 +73,11 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		}
 
 		ExplorationReport message = new ExplorationReport(getPosition().get(),
-				roadModel.get().readPheromones(this));
+				roadModel.get().readPathPheromones(this));
 		device.get().send(message, mothership);
 
 		if (hopCounter < hopLimit) {
+			//if(roadModel.get().readExploredPheromones(this).)
 
 			destination = Optional.absent();
 			Collection<Point> neighbours = roadModel.get().getNeighbours(

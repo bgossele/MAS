@@ -16,9 +16,11 @@ import com.github.rinde.rinsim.geom.Graph;
 public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 		implements TickListener {
 
-	private static final int PHEROMONE_LIFETIME = 2;
+	private static final int PATH_PHEROMONE_LIFETIME = 2;
 
-	protected volatile Map<Loc, List<PathPheromone>> pheromones = new HashMap<Loc, List<PathPheromone>>();
+	protected volatile Map<Loc, List<PathPheromone>> pathPheromones = new HashMap<Loc, List<PathPheromone>>();
+
+	protected volatile Map<Loc, List<ExploredPheromone>> exploredPheromones = new HashMap<Loc, List<ExploredPheromone>>();
 
 	public PheromoneVirtualGraphRoadModel(Graph<? extends ConnectionData> pGraph) {
 		super(pGraph);
@@ -26,16 +28,20 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 
 	public void dropPheromone(VirtualUser user, PathPheromone pheromone) {
 		Loc location = objLocs.get(user);
-		List<PathPheromone> list = pheromones.get(location);
+		List<PathPheromone> list = pathPheromones.get(location);
 		if (list == null) {
 			list = new LinkedList<PathPheromone>();
-			pheromones.put(location, list);
+			pathPheromones.put(location, list);
 		}
 		list.add(pheromone);
 	}
 
-	public List<PathPheromone> readPheromones(VirtualUser user) {
-		return pheromones.get(objLocs.get(user));
+	public List<PathPheromone> readPathPheromones(VirtualUser user) {
+		return pathPheromones.get(objLocs.get(user));
+	}
+
+	public List<ExploredPheromone> readExploredPheromones(VirtualUser user) {
+		return exploredPheromones.get(objLocs.get(user));
 	}
 
 	@Override
@@ -46,21 +52,42 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 	public void afterTick(TimeLapse timeLapse) {
 		// Update the life of pheromones and remove pheromones if they are
 		// expired.
-		Iterator<List<PathPheromone>> pheromoneListIterator = pheromones.values()
-				.iterator();
+		checkExploredPheromoneLifeTime();
+		checkPathPheromoneLifeTime();
+	}
+
+	private void checkPathPheromoneLifeTime() {
+		Iterator<List<PathPheromone>> pheromoneListIterator = pathPheromones
+				.values().iterator();
 		while (pheromoneListIterator.hasNext()) {
 			Iterator<PathPheromone> pheromoneIterator = pheromoneListIterator
 					.next().iterator();
 			while (pheromoneIterator.hasNext()) {
 				PathPheromone pheromone = pheromoneIterator.next();
 				pheromone.addTickToLife();
-//				System.out.println("Pheromone life : " +pheromone.getLifeTime());
-				if (pheromone.getLifeTime() >= PHEROMONE_LIFETIME) {
+				if (pheromone.getLifeTime() >= PATH_PHEROMONE_LIFETIME) {
 					pheromoneIterator.remove();
 					PathPheromoneFactory.release(pheromone);
-//					System.out.println("Removing pheromone");
 				}
 			}
 		}
 	}
+
+	private void checkExploredPheromoneLifeTime() {
+		Iterator<List<ExploredPheromone>> pheromoneListIterator = exploredPheromones
+				.values().iterator();
+		while (pheromoneListIterator.hasNext()) {
+			Iterator<ExploredPheromone> pheromoneIterator = pheromoneListIterator
+					.next().iterator();
+			while (pheromoneIterator.hasNext()) {
+				ExploredPheromone pheromone = pheromoneIterator.next();
+				pheromone.addTickToLife();
+				if (pheromone.getLifeTime() >= PATH_PHEROMONE_LIFETIME) {
+					pheromoneIterator.remove();
+					ExploredPheromoneFactory.release(pheromone);
+				}
+			}
+		}
+	}
+
 }
