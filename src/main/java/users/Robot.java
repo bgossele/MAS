@@ -41,8 +41,6 @@ import communication.ParcelOffer;
 public class Robot implements TickListener, MovingRoadUser, CommUser,
 		SimulatorUser {
 
-	private int searchDepth = 0;
-
 	public static final int DEFAULT_HOP_LIMIT = 10;
 
 	public static final int MAX_SEARCH_DEPTH = 500;
@@ -60,6 +58,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	private boolean checkedPath;
 	private int tickCounter = 0;
 	private final int id;
+	int waitingTime = 0;
 
 	public Robot(int id, Point start) {
 		roadModel = null;
@@ -98,7 +97,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			if (destination.equals(getPosition().get())) {
 				// parcel reached
 				if (!pickedUpParcel) {
-
 					parcel.pickUp();
 					destination = parcel.getDestination();
 					pickedUpParcel = true;
@@ -116,11 +114,16 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					System.out.println(id + ": Deliver - " + lastHop);
 				}
 			} else if (path != null && path.get(1).equals(getPosition().get())) {
-				lastHop = getPosition().get();
-				path = null;
-				System.out.println(id +": Hop reached - " + lastHop + " after "  + tickCounter + " ticks");
+				if(waitingTime > 0) {
+					waitingTime--;
+				} else {
+					lastHop = getPosition().get();
+					path = null;
+					System.out.println(id +": Hop reached - " + lastHop + " after "  + tickCounter + " ticks");
+				}
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
+			} else {
 			}
 			if (path != null) {
 				sendReservationAnts();
@@ -135,6 +138,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		if (path == null && destination != null) {
 			checkedPath = false;
 			path = getShortestPathTo(lastHop, destination);
+			if(path != null && path.get(0).equals(path.get(1))) {
+				waitingTime = getTicksToWait();
+			}
 		} else if (!checkedPath) {
 			checkedPath();
 		}
