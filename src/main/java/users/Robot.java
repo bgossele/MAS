@@ -157,17 +157,21 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<Point> resPath;
 		if (path == null) {
 			resPath = new LinkedList<Point>();
-			for (int i = 0; i < 3; i++) {
+			for (int i = 0; i < 5; i++) {
 				resPath.add(lastHop);
 			}
 		} else {
 			resPath = path;
+			for(int i = path.size(); i < 6; i++) {
+				resPath.add(path.getLast());
+			}
 		}
 		List<PathPheromone> pheromones = getPheromones(resPath);
 		for (int i = 0; i < resPath.size(); i++) {
 			ReservationAntFactory.build(resPath.get(i), pheromones.get(i),
 					simulator, id);
 		}
+		
 	}
 
 	public List<PathPheromone> getPheromones(List<Point> path) {
@@ -305,11 +309,11 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		nodesToExpand.add(fromTree);
 		List<PointMul> pointMuls = doGetShortestPathTo(nodesToExpand, fromTree,
 				to);
-		LinkedList<Point> path = constructListFromPointMuls(pointMuls);
-		System.out.println(id + ": path:" + path);
-		if (path == null) {
+		if (pointMuls == null) {
 			throw new PathNotFoundException();
 		}
+		LinkedList<Point> path = constructListFromPointMuls(pointMuls);
+		System.out.println(id + ": path:" + path);
 		return path;
 	}
 
