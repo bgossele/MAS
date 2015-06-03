@@ -83,7 +83,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	public double getSpeed() {
 		return 0.5;
 	}
-	
+
 	private int getTicksToWait() {
 		return (int) Math.round(Math.ceil(15 / getSpeed()));
 	}
@@ -114,17 +114,18 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					System.out.println(id + ": Deliver - " + lastHop);
 				}
 			} else if (path != null && path.get(1).equals(getPosition().get())) {
-				if(waitingTime > 0) {
+				if (waitingTime > 0) {
 					waitingTime--;
 				} else {
 					lastHop = getPosition().get();
 					path = null;
-					System.out.println(id +": Hop reached - " + lastHop + " after "  + tickCounter + " ticks");
+					System.out.println(id + ": Hop reached - " + lastHop
+							+ " after " + tickCounter + " ticks");
 				}
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
-			} 
-				sendReservationAnts();
+			}
+			sendReservationAnts();
 		}
 	}
 
@@ -139,7 +140,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			} catch (PathNotFoundException e) {
 				e.printStackTrace();
 			}
-			if(path != null && path.get(0).equals(path.get(1))) {
+			if (path != null && path.get(0).equals(path.get(1))) {
 				waitingTime = getTicksToWait();
 			}
 		} else if (!checkedPath) {
@@ -153,8 +154,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private void sendReservationAnts() {
-		List<Point> resPath ;
-		if(path == null){
+		List<Point> resPath;
+		if (path == null) {
 			resPath = new LinkedList<Point>();
 			resPath.add(lastHop);
 			resPath.add(lastHop);
@@ -163,8 +164,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		}
 		List<PathPheromone> pheromones = getPheromones(resPath);
 		for (int i = 0; i < resPath.size(); i++) {
-			ReservationAntFactory.build(resPath.get(i),
-					pheromones.get(i), simulator, id);
+			ReservationAntFactory.build(resPath.get(i), pheromones.get(i),
+					simulator, id);
 		}
 	}
 
@@ -265,7 +266,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		for (Parcel p : awardedParcels) {
 			int cost;
 			try {
-				List<Point> candidate_path = getShortestPathTo(roadModel.getPosition(this), p.getPosition().get());
+				List<Point> candidate_path = getShortestPathTo(
+						roadModel.getPosition(this), p.getPosition().get());
 				if (candidate_path != null) {
 					cost = candidate_path.size();
 					if (cost < min_cost) {
@@ -278,7 +280,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					break;
 				}
 			} catch (PathNotFoundException e) {
-				System.err.println("PathNotFoundException in acceptClosestPackage");
+				System.err
+						.println("PathNotFoundException in acceptClosestPackage");
 			}
 		}
 		if (winner != null) {
@@ -290,7 +293,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		}
 	}
 
-	private LinkedList<Point> getShortestPathTo(Point from, Point to) throws PathNotFoundException{
+	private LinkedList<Point> getShortestPathTo(Point from, Point to)
+			throws PathNotFoundException {
 		System.out.println(id + ": searching from " + from + " to " + to);
 		if (from.equals(to)) {
 			return null;
@@ -301,8 +305,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<PointMul> pointMuls = doGetShortestPathTo(nodesToExpand, fromTree,
 				to);
 		LinkedList<Point> path = constructListFromPointMuls(pointMuls);
-		System.out.println(id +": path:" + path);
-		if(path == null) {
+		System.out.println(id + ": path:" + path);
+		if (path == null) {
 			throw new PathNotFoundException();
 		}
 		return path;
@@ -343,10 +347,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					|| currentNode.getDepth() > MAX_SEARCH_DEPTH) {
 				break;
 			}
-//			if (currentNode.getDepth() != searchDepth) {
-//				searchDepth = currentNode.getDepth();
-//				System.out.println(id + ": searchdepth - " + searchDepth);
-//			}
+			// if (currentNode.getDepth() != searchDepth) {
+			// searchDepth = currentNode.getDepth();
+			// System.out.println(id + ": searchdepth - " + searchDepth);
+			// }
 		}
 		System.out.println(id + ": shortest path length:" + shortestPathLength);
 		return shortesPath;
@@ -403,42 +407,41 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	private List<PointMul> findBacktrackPoint(List<PointMul> pointMuls,
 			int robotId, List<PathPheromone> pheromoneList, int step) {
-		while (true) {
+		int waitingTime = 0;
+		Boolean collissionEndFound = false;
+		while (!collissionEndFound) {
 			PathPheromone pheromone = pheromoneList.get(step);
 			Point point = getFromPointMulList(pointMuls, step).getPoint();
-			PathPheromone otherPheromone = getPheremoneWithRobotId(
-					pheromones.get(point), robotId);
-			if (point.equals(pointMuls.get(0))) {
-				return null;
-			} else if (otherPheromone.getGoal().equals(pheromone.getOrigin())) {
-				step--;
-			} else {
-				int waitingTime = otherPheromone.getTimeStamp();
-				PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
-				boolean waitingInserted = false;
-				for (PointMul pointMul : pointMuls) {
-					if (waitingInserted) {
-						pointMul.setMul(1);
-					} else if (pointMul.equals(waitingSpot)) {
-						pointMul.setMul(waitingTime + 1);
+			for (PathPheromone otherPheromone : pheromones.get(point)) {
+				if (otherPheromone.getRobot() == robotId) {
+					if (point.equals(pointMuls.get(0).getPoint())) {
+						return null;
+					} else if (otherPheromone.getGoal().equals(
+							pheromone.getOrigin())) {
+						step--;
+						break;
+					} else if (otherPheromone.getGoal().equals(Move.WAIT)) {
+						// Do nothing
 					} else {
-						waitingTime -= pointMul.getMul();
+						collissionEndFound = true;
+						waitingTime = otherPheromone.getTimeStamp();
+						break;
 					}
 				}
-				break;
+			}
+		}
+		PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
+		boolean waitingInserted = false;
+		for (PointMul pointMul : pointMuls) {
+			if (waitingInserted) {
+				pointMul.setMul(1);
+			} else if (pointMul.equals(waitingSpot)) {
+				pointMul.setMul(waitingTime + 1);
+			} else {
+				waitingTime -= pointMul.getMul();
 			}
 		}
 		return pointMuls;
-	}
-
-	private static PathPheromone getPheremoneWithRobotId(
-			List<PathPheromone> pheromoneList, int robotId) {
-		for (PathPheromone pheromone : pheromoneList) {
-			if (pheromone.getRobot() == robotId) {
-				return pheromone;
-			}
-		}
-		return null;
 	}
 
 	private static PointMul getFromPointMulList(List<PointMul> pointMuls,

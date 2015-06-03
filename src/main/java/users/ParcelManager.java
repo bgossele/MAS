@@ -26,8 +26,8 @@ public class ParcelManager implements TickListener {
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if (parcelCounter <= 15) {
-			while ((rng.nextInt() % 127) == 0) {
+		if (parcelCounter <= 25) {
+			while ((rng.nextInt() % 67) == 0) {
 				Point start = model.getRandomPosition(rng);
 				Point destination;
 				do {
