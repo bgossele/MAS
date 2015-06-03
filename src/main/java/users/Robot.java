@@ -25,7 +25,6 @@ import com.github.rinde.rinsim.core.model.comm.CommUser;
 import com.github.rinde.rinsim.core.model.comm.Message;
 import com.github.rinde.rinsim.core.model.comm.MessageContents;
 import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
-import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.ConnectionData;
@@ -113,11 +112,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				System.out.println("Hop reached");
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
-				System.out.println("Moving");
 			}
 			if (path != null) {
 				sendReservationAnts();
-				System.out.println("Sending reservation ants");
 			}
 		}
 	}
