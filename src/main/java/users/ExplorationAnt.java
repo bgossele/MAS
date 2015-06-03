@@ -81,17 +81,14 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 			destination = Optional.absent();
 			Collection<Point> neighbours = roadModel.get().getNeighbours(
 					getPosition().get());
-			int childnr = 1;
 			for (Point des : neighbours) {
 				if (des.equals(previousPosition.orNull())) {
 					continue;
 				} else if (destination.equals(Optional.absent())) {
 					destination = Optional.of(des);
 				} else {
-					int new_id = 10 * id + childnr;
-					childnr++;
 					ExplorationAntFactory.build(des, getPosition().get(), mothership,
-							hopLimit - hopCounter, new_id, simulator);
+							hopLimit - hopCounter, simulator);
 				}
 			}
 
