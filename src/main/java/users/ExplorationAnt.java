@@ -29,9 +29,10 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 	private CommUser mothership;
 	private int hopLimit;
 	private int hopCounter;
-	private int id;
+	private final int id;
 
-	ExplorationAnt() {
+	ExplorationAnt(int id) {
+		this.id = id;
 	}
 
 	void reset() {
@@ -41,10 +42,9 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		this.mothership = null;
 		this.hopLimit = 0;
 		hopCounter = 0;
-		this.id = 0;
 	}
 
-	void set(Point start, CommUser mothership, int hopLimit, int id,
+	void set(Point start, CommUser mothership, int hopLimit,
 			SimulatorAPI sim) {
 		active = true;
 		previousPosition = Optional.absent();
@@ -52,14 +52,13 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 		this.mothership = mothership;
 		this.hopLimit = hopLimit;
 		hopCounter = 0;
-		this.id = id;
 		this.simulator = sim;
 		roadModel.get().addObjectAt(this, start);
 	}
 
 	void set(Point start, Point previous, CommUser mothership, int hopLimit,
-			int id, SimulatorAPI sim) {
-		set(start, mothership, hopLimit, id, sim);
+			SimulatorAPI sim) {
+		set(start, mothership, hopLimit, sim);
 		this.previousPosition = Optional.of(previous);
 	}
 
