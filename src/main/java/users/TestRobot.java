@@ -42,7 +42,7 @@ import communication.ParcelOffer;
 public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		SimulatorUser {
 
-	public static final int DEFAULT_HOP_LIMIT = 2;
+	public static final int DEFAULT_HOP_LIMIT = 10;
 
 	private CollisionGraphRoadModel roadModel;
 	private Point destination;
@@ -124,7 +124,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		
 		List<PathPheromone> pheromones = getPheromones(path_with_origin);
 		for(int i = 0; i < Math.min(path_with_origin.size(), DEFAULT_HOP_LIMIT); i++){
-			ReservationAntFactory.build(path_with_origin.get(i), pheromones.get(i), simulator);
+			ReservationAntFactory.build(path_with_origin.get(i), pheromones.get(i), simulator, id);
 		}
 	}
 	

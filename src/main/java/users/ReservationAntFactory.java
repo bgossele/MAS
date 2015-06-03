@@ -12,14 +12,14 @@ public class ReservationAntFactory {
 
 	private static Queue<ReservationAnt> unusedAntInstances = new ArrayDeque<ReservationAnt>();
 
-	public static ReservationAnt build(Point start, PathPheromone pheromone, SimulatorAPI sim) {
+	public static ReservationAnt build(Point start, PathPheromone pheromone, SimulatorAPI sim, int robotId) {
 		ReservationAnt ant = unusedAntInstances.poll();
 		if (ant == null) {
 			ant = new ReservationAnt();
 		} else {
 			ant.reset();
 		}
-		ant.set(start, pheromone, sim);
+		ant.set(start, pheromone, sim, robotId);
 		sim.register(ant);
 		return ant;
 	}
