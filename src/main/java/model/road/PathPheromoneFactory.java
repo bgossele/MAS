@@ -3,7 +3,7 @@ package model.road;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
-public class PheromoneFactory {
+public class PathPheromoneFactory {
 
 	private static final int MAX_UNUSED_PHEROMONE_INSTANCES = 200;
 
@@ -22,21 +22,8 @@ public class PheromoneFactory {
 		pheromone.setRobot(robot);
 		return pheromone;
 	}
-	
-//	public static ExploredPheromone build(int timeStamp, Move origin, Move goal,
-//			int robot) {
-//		Pheromone pheromone = unusedPheremoneInstances.poll();
-//		if (pheromone == null) {
-//			pheromone = new Pheromone();
-//		}
-//		pheromone.setTimeStamp(timeStamp);
-//		pheromone.setOrigin(origin);
-//		pheromone.setGoal(goal);
-//		pheromone.setRobot(robot);
-//		return pheromone;
-//	}
 
-	static void returnPheromone(PathPheromone pheromone) {
+	static void release(PathPheromone pheromone) {
 		unusedPheremoneInstances.add(pheromone);
 	}
 }

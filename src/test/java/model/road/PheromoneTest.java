@@ -2,7 +2,7 @@ package model.road;
 
 import model.road.Move;
 import model.road.PathPheromone;
-import model.road.PheromoneFactory;
+import model.road.PathPheromoneFactory;
 
 import org.junit.After;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class PheromoneTest {
 
 	@Test
 	public void testPheromoneConstruction() {
-		pheromone1 = PheromoneFactory.build(1, Move.NORTH, Move.SOUTH, 2);
+		pheromone1 = PathPheromoneFactory.build(1, Move.NORTH, Move.SOUTH, 2);
 		assert (pheromone1.getOrigin().equals(Move.NORTH));
 		assert (pheromone1.getGoal().equals(Move.SOUTH));
 		assert (pheromone1.getTimeStamp() == 1);
@@ -29,9 +29,9 @@ public class PheromoneTest {
 
 	@Test
 	public void testPheremoneConstructionReturnAndReconstruction() {
-		pheromone1 = PheromoneFactory.build(1, Move.NORTH, Move.SOUTH, 2);
-		PheromoneFactory.returnPheromone(pheromone1);
-		pheromone2 = PheromoneFactory.build(11, Move.EAST, Move.WEST, 22);
+		pheromone1 = PathPheromoneFactory.build(1, Move.NORTH, Move.SOUTH, 2);
+		PathPheromoneFactory.release(pheromone1);
+		pheromone2 = PathPheromoneFactory.build(11, Move.EAST, Move.WEST, 22);
 		assert (pheromone1.getOrigin().equals(Move.NORTH));
 		assert (pheromone1.getGoal().equals(Move.SOUTH));
 		assert (pheromone1.getTimeStamp() == 1);

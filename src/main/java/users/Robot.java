@@ -12,7 +12,7 @@ import java.util.Queue;
 
 import model.road.Move;
 import model.road.PathPheromone;
-import model.road.PheromoneFactory;
+import model.road.PathPheromoneFactory;
 import model.road.PointTree;
 
 import com.github.rinde.rinsim.core.SimulatorAPI;
@@ -171,13 +171,13 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				} else if (d_y < 0) {
 					move = Move.NORTH;
 				}
-				res.add(PheromoneFactory.build(i, previousMove.getOpposite(),
+				res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(),
 						move, -5));
 				previousMove = move;
 
 			} else {
 				move = Move.WAIT;
-				res.add(PheromoneFactory.build(i, previousMove.getOpposite(),
+				res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(),
 						move, -5));
 			}
 		}
@@ -206,12 +206,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			} else if (d_y < 0) {
 				move = Move.NORTH;
 			}
-			res.add(PheromoneFactory.build(i, previousMove.getOpposite(), move,
+			res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(), move,
 					-5));
 			previousMove = move;
 		}
 		move = Move.WAIT;
-		res.add(PheromoneFactory.build(i, previousMove.getOpposite(), move, -5));
+		res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(), move, -5));
 		return res;
 	}
 

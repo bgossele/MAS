@@ -120,9 +120,9 @@ public class PheromoneVirtualGraphRoadModelTest {
 			ticks++;
 			switch (ticks) {
 			case 2:
-				PathPheromone pheromone1 = PheromoneFactory.build(0, Move.WAIT,
+				PathPheromone pheromone1 = PathPheromoneFactory.build(0, Move.WAIT,
 						Move.WAIT, 0);
-				PathPheromone pheromone2 = PheromoneFactory.build(5, Move.NORTH,
+				PathPheromone pheromone2 = PathPheromoneFactory.build(5, Move.NORTH,
 						Move.SOUTH, 10);
 				pheromoneVirtualModel.dropPheromone(ant, pheromone1);
 				pheromoneVirtualModel.dropPheromone(ant, pheromone2);

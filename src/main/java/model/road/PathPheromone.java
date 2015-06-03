@@ -1,16 +1,12 @@
 package model.road;
 
-public class PathPheromone {
+public class PathPheromone extends Pheromone{
 
 	private int timeStamp;
 
 	private Move origin;
 
 	private Move goal;
-
-	private int robot;
-
-	private int lifeTime;
 
 	PathPheromone() {
 	}
@@ -37,26 +33,6 @@ public class PathPheromone {
 
 	void setGoal(Move goal) {
 		this.goal = goal;
-	}
-
-	public int getRobot() {
-		return robot;
-	}
-
-	void setRobot(int robot) {
-		this.robot = robot;
-	}
-	
-	public int getLifeTime() {
-		return lifeTime;
-	}
-
-	public void addTickToLife() {
-		lifeTime++;
-	}
-
-	void resetLife() {
-		lifeTime = 0;
 	}
 	
 	@Override
