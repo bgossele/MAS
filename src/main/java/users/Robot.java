@@ -264,8 +264,14 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		int min_cost = Integer.MAX_VALUE;
 		Parcel winner = null;
 		for (Parcel p : awardedParcels) {
-			int cost = getShortestPathTo(roadModel.getPosition(this),
-					p.getPosition().get()).size();
+			int cost;
+			try {
+				cost = getShortestPathTo(roadModel.getPosition(this),
+						p.getPosition().get()).size();
+			} catch (PathNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			if (cost < min_cost) {
 				winner = p;
 				min_cost = cost;
