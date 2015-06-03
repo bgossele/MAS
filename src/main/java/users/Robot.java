@@ -94,24 +94,27 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			if (destination.equals(getPosition().get())) {
 				// parcel reached
 				if (!pickedUpParcel) {
-					System.out.println("Pickup");
+					
 					parcel.pickUp();
 					destination = parcel.getDestination();
 					pickedUpParcel = true;
 					path = null;
+					lastHop = getPosition().get();
+					System.out.println(id +": Pickup - " + lastHop);
 				} else {
-					System.out.println("Deliver");
 					parcel.dropAndDeliver(getPosition().get());
 					destination = null;
 					parcel = null;
 					pickedUpParcel = false;
 					acceptedParcel = false;
 					path = null;
+					lastHop = getPosition().get();
+					System.out.println(id +": Deliver - " + lastHop);
 				}
 			} else if (path != null && path.get(1).equals(getPosition().get())) {
-				lastHop = path.get(1);
+				lastHop = getPosition().get();
 				path = null;
-				System.out.println("Hop reached");
+				System.out.println(id +": Hop reached - " + lastHop);
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
 			}
@@ -127,8 +130,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		readMessages();
 		if (path == null && destination != null) {
 			checkedPath = false;
-			System.out.println("lastHop:" + lastHop);
-			System.out.println("destination" + destination);
 			path = getShortestPathTo(lastHop, destination);
 		} else if (!checkedPath) {
 			checkedPath();
@@ -312,7 +313,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			}
 			if (currentNode.getDepth() != searchDepth) {
 				searchDepth = currentNode.getDepth();
-				System.out.println(searchDepth);
+				System.out.println(id + ": searchdepth - " +searchDepth);
 				if(currentNode.getDepth() == 42) {
 					System.out.println("42");
 				}
