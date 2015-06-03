@@ -123,11 +123,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				}
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
-			} else {
-			}
-			if (path != null) {
+			} 
 				sendReservationAnts();
-			}
 		}
 	}
 
@@ -156,15 +153,17 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private void sendReservationAnts() {
-		@SuppressWarnings("unchecked")
-		List<Point> path_with_origin = (List<Point>) path.clone();
-		if (path.getFirst() != getPosition().get()) {
-			path_with_origin.add(0, lastHop);
+		List<Point> resPath ;
+		if(path == null){
+			resPath = new LinkedList<Point>();
+			resPath.add(lastHop);
+			resPath.add(lastHop);
+		} else {
+			resPath = path;
 		}
-
-		List<PathPheromone> pheromones = getPheromones(path_with_origin);
-		for (int i = 0; i < path_with_origin.size(); i++) {
-			ReservationAntFactory.build(path_with_origin.get(i),
+		List<PathPheromone> pheromones = getPheromones(resPath);
+		for (int i = 0; i < resPath.size(); i++) {
+			ReservationAntFactory.build(resPath.get(i),
 					pheromones.get(i), simulator, id);
 		}
 	}
