@@ -1,14 +1,14 @@
 package model.road;
 
+import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
+import users.ExplorationAnt;
+
 public class ExploredPheromoneFactory {
 
-	private static final int MAX_UNUSED_PHEROMONE_INSTANCES = 200;
-
-	private static Queue<ExploredPheromone> unusedPheromoneInstances = new ArrayBlockingQueue<ExploredPheromone>(
-			MAX_UNUSED_PHEROMONE_INSTANCES);
+	private static Queue<ExploredPheromone> unusedPheromoneInstances = new ArrayDeque<ExploredPheromone>();
 
 	public static ExploredPheromone build(int tick, int robot) {
 		ExploredPheromone pheromone = unusedPheromoneInstances.poll();

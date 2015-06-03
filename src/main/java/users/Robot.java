@@ -112,8 +112,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				path = null;
 				System.out.println("Hop reached");
 			} else if (checkedPath) {
-				MoveProgress mp = roadModel
-						.moveTo(this, path.get(1), timeLapse);
+				roadModel.moveTo(this, path.get(1), timeLapse);
 				System.out.println("Moving");
 			}
 			if (path != null) {
@@ -156,7 +155,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		}
 	}
 
-	public static List<PathPheromone> getPheromones(List<Point> path) {
+	public List<PathPheromone> getPheromones(List<Point> path) {
 		ArrayList<PathPheromone> res = new ArrayList<PathPheromone>();
 		Move previousMove = Move.WAIT;
 		for (int i = 0; i < path.size(); i++) {
@@ -178,19 +177,19 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					move = Move.NORTH;
 				}
 				res.add(PathPheromoneFactory.build(i,
-						previousMove.getOpposite(), move, -5));
+						previousMove.getOpposite(), move, id));
 				previousMove = move;
 
 			} else {
 				move = Move.WAIT;
 				res.add(PathPheromoneFactory.build(i,
-						previousMove.getOpposite(), move, -5));
+						previousMove.getOpposite(), move, id));
 			}
 		}
 		return res;
 	}
 
-	public static List<PathPheromone> getPheromonesMul(List<PointMul> path) {
+	public List<PathPheromone> getPheromonesMul(List<PointMul> path) {
 		ArrayList<PathPheromone> res = new ArrayList<PathPheromone>();
 		int i = 0;
 		int end = getLengthPointMulList(path);
@@ -213,12 +212,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				move = Move.NORTH;
 			}
 			res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(),
-					move, -5));
+					move, id));
 			previousMove = move;
 		}
 		move = Move.WAIT;
 		res.add(PathPheromoneFactory.build(i, previousMove.getOpposite(), move,
-				-5));
+				id));
 		return res;
 	}
 

@@ -1,14 +1,12 @@
 package model.road;
 
+import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.concurrent.ArrayBlockingQueue;
 
 public class PathPheromoneFactory {
 
-	private static final int MAX_UNUSED_PHEROMONE_INSTANCES = 200;
-
-	private static Queue<PathPheromone> unusedPheremoneInstances = new ArrayBlockingQueue<PathPheromone>(
-			MAX_UNUSED_PHEROMONE_INSTANCES);
+	private static Queue<PathPheromone> unusedPheremoneInstances = new ArrayDeque<PathPheromone>();
 
 	public static PathPheromone build(int timeStamp, Move origin, Move goal,
 			int robot) {
