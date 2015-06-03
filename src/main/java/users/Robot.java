@@ -268,20 +268,21 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			try {
 				cost = getShortestPathTo(roadModel.getPosition(this),
 						p.getPosition().get()).size();
+				if (cost < min_cost) {
+					winner = p;
+					min_cost = cost;
+				}
 			} catch (PathNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			if (cost < min_cost) {
-				winner = p;
-				min_cost = cost;
+				System.err.println("PathNotFoundException in acceptClosestPackage");
 			}
 		}
-		device.send(new ParcelAccept(), winner);
-		parcel = winner;
-		acceptedParcel = true;
-		destination = winner.getPosition().get();
-		System.out.println(id + ": packet accepted - " + destination);
+		if (winner != null) {
+			device.send(new ParcelAccept(), winner);
+			parcel = winner;
+			acceptedParcel = true;
+			destination = winner.getPosition().get();
+			System.out.println(id + ": packet accepted - " + destination);
+		}
 	}
 
 	private LinkedList<Point> getShortestPathTo(Point from, Point to) throws PathNotFoundException{
