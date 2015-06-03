@@ -120,19 +120,19 @@ public class PheromoneVirtualGraphRoadModelTest {
 			ticks++;
 			switch (ticks) {
 			case 2:
-				Pheromone pheromone1 = PheromoneFactory.build(0, Move.WAIT,
+				PathPheromone pheromone1 = PheromoneFactory.build(0, Move.WAIT,
 						Move.WAIT, 0);
-				Pheromone pheromone2 = PheromoneFactory.build(5, Move.NORTH,
+				PathPheromone pheromone2 = PheromoneFactory.build(5, Move.NORTH,
 						Move.SOUTH, 10);
 				pheromoneVirtualModel.dropPheromone(ant, pheromone1);
 				pheromoneVirtualModel.dropPheromone(ant, pheromone2);
 				break;
 			case 3:
-				List<Pheromone> list = pheromoneVirtualModel
+				List<PathPheromone> list = pheromoneVirtualModel
 						.readPheromones(ant);
 				boolean pheromone1Present = false;
 				boolean pheromone2Present = false;
-				for (Pheromone pheromone : list) {
+				for (PathPheromone pheromone : list) {
 					if (pheromone.getTimeStamp() == 0) {
 						pheromone1Present = true;
 						assert (pheromone.getLifeTime() == 1);
@@ -146,11 +146,11 @@ public class PheromoneVirtualGraphRoadModelTest {
 				}
 				break;
 			case 4:
-				List<Pheromone> list2 = pheromoneVirtualModel
+				List<PathPheromone> list2 = pheromoneVirtualModel
 						.readPheromones(ant);
 				boolean pheromone1Present2 = false;
 				boolean pheromone2Present2 = false;
-				for (Pheromone pheromone : list2) {
+				for (PathPheromone pheromone : list2) {
 					if (pheromone.getTimeStamp() == 0) {
 						pheromone1Present2 = true;
 					} else if (pheromone.getTimeStamp() == 5) {

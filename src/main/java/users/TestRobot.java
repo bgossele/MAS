@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Queue;
 
 import model.road.Move;
-import model.road.Pheromone;
+import model.road.PathPheromone;
 import model.road.PheromoneFactory;
 import model.road.PointTree;
 
@@ -49,7 +49,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	private LinkedList<Point> path;
 	private Point lastHop;
 	private CommDevice device;
-	private Map<Point, List<Pheromone>> pheromones;
+	private Map<Point, List<PathPheromone>> pheromones;
 	private SimulatorAPI simulator;
 	private Parcel parcel;
 	private boolean acceptedParcel;
@@ -63,7 +63,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		path = new LinkedList<>();
 		device = null;
 		parcel = null;
-		pheromones = new HashMap<Point, List<Pheromone>>();
+		pheromones = new HashMap<Point, List<PathPheromone>>();
 	}
 
 	@Override
@@ -120,14 +120,14 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 			path_with_origin.add(0, lastHop);
 		}
 		
-		List<Pheromone> pheromones = getPheromones(path_with_origin);
+		List<PathPheromone> pheromones = getPheromones(path_with_origin);
 		for(int i = 0; i < Math.min(path_with_origin.size(), DEFAULT_HOP_LIMIT); i++){
 			ReservationAntFactory.build(path_with_origin.get(i), pheromones.get(i), simulator);
 		}
 	}
 	
-	public static List<Pheromone> getPheromones(List<Point> path){
-		ArrayList<Pheromone> res = new ArrayList<Pheromone>();
+	public static List<PathPheromone> getPheromones(List<Point> path){
+		ArrayList<PathPheromone> res = new ArrayList<PathPheromone>();
 		for (int i = 0; i < path.size(); i++) {
 			Point current = path.get(i);
 			Move move = null;
@@ -248,8 +248,8 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		int step = 1;
 		while (true) {
 			Point point = path.get(step);
-			List<Pheromone> pheremonesOnPoint = pheromones.get(point);
-			for (Pheromone pheromone : pheremonesOnPoint) {
+			List<PathPheromone> pheremonesOnPoint = pheromones.get(point);
+			for (PathPheromone pheromone : pheremonesOnPoint) {
 				if (pheromone.getTimeStamp() == step) {
 					//TODO check for kind of conflict.
 				}

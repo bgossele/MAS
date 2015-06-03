@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Queue;
 
 import model.road.Move;
-import model.road.Pheromone;
+import model.road.PathPheromone;
 import model.road.PheromoneFactory;
 import model.road.PointTree;
 
@@ -51,7 +51,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	private LinkedList<Point> path;
 	private Point lastHop;
 	private CommDevice device;
-	private Map<Point, List<Pheromone>> pheromones;
+	private Map<Point, List<PathPheromone>> pheromones;
 	private SimulatorAPI simulator;
 	private Parcel parcel;
 	private boolean acceptedParcel;
@@ -65,7 +65,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		path = null;
 		device = null;
 		parcel = null;
-		pheromones = new HashMap<Point, List<Pheromone>>();
+		pheromones = new HashMap<Point, List<PathPheromone>>();
 	}
 
 	@Override
@@ -143,15 +143,15 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			path_with_origin.add(0, lastHop);
 		}
 
-		List<Pheromone> pheromones = getPheromones(path_with_origin);
+		List<PathPheromone> pheromones = getPheromones(path_with_origin);
 		for (int i = 0; i < path_with_origin.size(); i++) {
 			ReservationAntFactory.build(path_with_origin.get(i),
 					pheromones.get(i), simulator);
 		}
 	}
 
-	public static List<Pheromone> getPheromones(List<Point> path) {
-		ArrayList<Pheromone> res = new ArrayList<Pheromone>();
+	public static List<PathPheromone> getPheromones(List<Point> path) {
+		ArrayList<PathPheromone> res = new ArrayList<PathPheromone>();
 		Move previousMove = Move.WAIT;
 		for (int i = 0; i < path.size(); i++) {
 			Point current = path.get(i);
@@ -184,8 +184,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		return res;
 	}
 
-	public static List<Pheromone> getPheromonesMul(List<PointMul> path) {
-		ArrayList<Pheromone> res = new ArrayList<Pheromone>();
+	public static List<PathPheromone> getPheromonesMul(List<PointMul> path) {
+		ArrayList<PathPheromone> res = new ArrayList<PathPheromone>();
 		int i = 0;
 		int end = getLengthPointMulList(path);
 		Move move = null;
@@ -303,15 +303,15 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	private List<PointMul> conflictAvoidance(PointTree nextHopTree) {
 		List<PointMul> pointMuls = constructPointMuls(nextHopTree);
-		List<Pheromone> pheremoneList = getPheromonesMul(pointMuls);
+		List<PathPheromone> pheremoneList = getPheromonesMul(pointMuls);
 		int step = 0;
 		while (step < getLengthPointMulList(pointMuls)) {
 			PointMul pointMul = getFromPointMulList(pointMuls, step);
 			Point point = pointMul.getPoint();
-			Pheromone pheromone = pheremoneList.get(step);
-			List<Pheromone> otherPheromonesOnPoint = pheromones.get(point);
+			PathPheromone pheromone = pheremoneList.get(step);
+			List<PathPheromone> otherPheromonesOnPoint = pheromones.get(point);
 			if (otherPheromonesOnPoint != null) {
-				for (Pheromone otherPheromone : otherPheromonesOnPoint) {
+				for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
 					if (otherPheromone.getTimeStamp() <= step + 1
 							|| otherPheromone.getTimeStamp() > step - 1) {
 						if (point.equals(pointMuls.get(0).getPoint())) {
@@ -340,11 +340,11 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private List<PointMul> findBacktrackPoint(List<PointMul> pointMuls, int robotId,
-			List<Pheromone> pheromoneList, int step) {
+			List<PathPheromone> pheromoneList, int step) {
 		while (true) {
-			Pheromone pheromone = pheromoneList.get(step);
+			PathPheromone pheromone = pheromoneList.get(step);
 			Point point = getFromPointMulList(pointMuls, step).getPoint();
-			Pheromone otherPheromone = getPheremoneWithRobotId(
+			PathPheromone otherPheromone = getPheremoneWithRobotId(
 					pheromones.get(point), robotId);
 			if(point.equals(pointMuls.get(0))) {
 				return null;
@@ -369,9 +369,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		return pointMuls;
 	}
 
-	private static Pheromone getPheremoneWithRobotId(
-			List<Pheromone> pheromoneList, int robotId) {
-		for (Pheromone pheromone : pheromoneList) {
+	private static PathPheromone getPheremoneWithRobotId(
+			List<PathPheromone> pheromoneList, int robotId) {
+		for (PathPheromone pheromone : pheromoneList) {
 			if (pheromone.getRobot() == robotId) {
 				return pheromone;
 			}

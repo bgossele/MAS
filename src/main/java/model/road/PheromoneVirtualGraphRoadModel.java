@@ -18,23 +18,23 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 
 	private static final int PHEROMONE_LIFETIME = 2;
 
-	protected volatile Map<Loc, List<Pheromone>> pheromones = new HashMap<Loc, List<Pheromone>>();
+	protected volatile Map<Loc, List<PathPheromone>> pheromones = new HashMap<Loc, List<PathPheromone>>();
 
 	public PheromoneVirtualGraphRoadModel(Graph<? extends ConnectionData> pGraph) {
 		super(pGraph);
 	}
 
-	public void dropPheromone(VirtualUser user, Pheromone pheromone) {
+	public void dropPheromone(VirtualUser user, PathPheromone pheromone) {
 		Loc location = objLocs.get(user);
-		List<Pheromone> list = pheromones.get(location);
+		List<PathPheromone> list = pheromones.get(location);
 		if (list == null) {
-			list = new LinkedList<Pheromone>();
+			list = new LinkedList<PathPheromone>();
 			pheromones.put(location, list);
 		}
 		list.add(pheromone);
 	}
 
-	public List<Pheromone> readPheromones(VirtualUser user) {
+	public List<PathPheromone> readPheromones(VirtualUser user) {
 		return pheromones.get(objLocs.get(user));
 	}
 
@@ -46,13 +46,13 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 	public void afterTick(TimeLapse timeLapse) {
 		// Update the life of pheromones and remove pheromones if they are
 		// expired.
-		Iterator<List<Pheromone>> pheromoneListIterator = pheromones.values()
+		Iterator<List<PathPheromone>> pheromoneListIterator = pheromones.values()
 				.iterator();
 		while (pheromoneListIterator.hasNext()) {
-			Iterator<Pheromone> pheromoneIterator = pheromoneListIterator
+			Iterator<PathPheromone> pheromoneIterator = pheromoneListIterator
 					.next().iterator();
 			while (pheromoneIterator.hasNext()) {
-				Pheromone pheromone = pheromoneIterator.next();
+				PathPheromone pheromone = pheromoneIterator.next();
 				pheromone.addTickToLife();
 //				System.out.println("Pheromone life : " +pheromone.getLifeTime());
 				if (pheromone.getLifeTime() >= PHEROMONE_LIFETIME) {

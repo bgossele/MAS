@@ -1,7 +1,7 @@
 package model.road;
 
 import model.road.Move;
-import model.road.Pheromone;
+import model.road.PathPheromone;
 import model.road.PheromoneFactory;
 
 import org.junit.After;
@@ -9,8 +9,8 @@ import org.junit.Test;
 
 public class PheromoneTest {
 
-	private Pheromone pheromone1;
-	private Pheromone pheromone2;
+	private PathPheromone pheromone1;
+	private PathPheromone pheromone2;
 
 	@After
 	public void tearDown() {

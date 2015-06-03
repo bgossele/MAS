@@ -1,6 +1,6 @@
 package model.road;
 
-public class Pheromone {
+public class PathPheromone {
 
 	private int timeStamp;
 
@@ -12,7 +12,7 @@ public class Pheromone {
 
 	private int lifeTime;
 
-	Pheromone() {
+	PathPheromone() {
 	}
 
 	public int getTimeStamp() {

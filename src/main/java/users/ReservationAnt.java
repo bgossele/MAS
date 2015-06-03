@@ -1,6 +1,6 @@
 package users;
 
-import model.road.Pheromone;
+import model.road.PathPheromone;
 import model.road.PheromoneVirtualGraphRoadModel;
 import model.road.VirtualRoadModel;
 
@@ -13,11 +13,11 @@ import com.github.rinde.rinsim.geom.Point;
 public class ReservationAnt implements VirtualUser, TickListener, SimulatorUser {
 
 	private PheromoneVirtualGraphRoadModel roadModel;
-	private Pheromone pheromone;
+	private PathPheromone pheromone;
 	private Point start;
 	private SimulatorAPI simulator;
 	
-	public void set(Point start, Pheromone pheromone, SimulatorAPI sim) {
+	public void set(Point start, PathPheromone pheromone, SimulatorAPI sim) {
 		this.start = start;
 		this.pheromone = pheromone;
 		this.simulator = sim;

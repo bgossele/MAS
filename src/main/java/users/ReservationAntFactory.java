@@ -3,7 +3,7 @@ package users;
 import java.util.ArrayDeque;
 import java.util.Queue;
 
-import model.road.Pheromone;
+import model.road.PathPheromone;
 
 import com.github.rinde.rinsim.core.SimulatorAPI;
 import com.github.rinde.rinsim.geom.Point;
@@ -12,7 +12,7 @@ public class ReservationAntFactory {
 
 	private static Queue<ReservationAnt> unusedAntInstances = new ArrayDeque<ReservationAnt>();
 
-	public static ReservationAnt build(Point start, Pheromone pheromone, SimulatorAPI sim) {
+	public static ReservationAnt build(Point start, PathPheromone pheromone, SimulatorAPI sim) {
 		ReservationAnt ant = unusedAntInstances.poll();
 		if (ant == null) {
 			ant = new ReservationAnt();
