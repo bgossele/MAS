@@ -57,14 +57,17 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	private boolean acceptedParcel;
 	private boolean pickedUpParcel;
 	private boolean checkedPath;
+	private int tickCounter = 0;
+	private final int id;
 
-	public Robot(Point start) {
+	public Robot(int id, Point start) {
 		roadModel = null;
 		// Robot will be placed at destination on initialization.
 		destination = start;
 		path = null;
 		device = null;
 		parcel = null;
+		this.id = id;
 		pheromones = new HashMap<Point, List<PathPheromone>>();
 	}
 
@@ -83,6 +86,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
+		tickCounter++;
 		ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, simulator);
 		if (destination != null) {
 			if (destination.equals(getPosition().get())) {
