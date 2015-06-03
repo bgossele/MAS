@@ -96,8 +96,12 @@ public class ExplorationAnt implements TickListener, VirtualUser, CommUser,
 				}
 			}
 
-			roadModel.get().moveTo(this, destination.get());
-			hopCounter += 1;
+			if(destination.isPresent()) {
+				roadModel.get().moveTo(this, destination.get());
+				hopCounter += 1;
+			} else { //dead-end reached, stop exploration
+				hopCounter = hopLimit;
+			}
 		} else {
 			roadModel.get().removeObject(this);
 			ExplorationAntFactory.returnAnt(this);

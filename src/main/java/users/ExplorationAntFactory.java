@@ -18,7 +18,7 @@ public class ExplorationAntFactory {
 			ant = new ExplorationAnt();
 			sim.register(ant);
 		} else {
-			ant.reset();
+//			ant.reset();
 		}
 		ant.set(start, mothership, hopLimit, id, sim);
 		return ant;
@@ -31,7 +31,7 @@ public class ExplorationAntFactory {
 			ant = new ExplorationAnt();
 			sim.register(ant);
 		} else {
-			ant.reset();
+//			ant.reset();
 		}
 		ant.set(start, destination, mothership, hopLimit, id, sim);
 		return ant;

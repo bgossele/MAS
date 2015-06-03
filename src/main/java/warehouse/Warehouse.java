@@ -43,7 +43,7 @@ public final class Warehouse {
 	 */
 	public static void main(String[] args) {
 
-		ListenableGraph<LengthData> g = createSimpleGraph();
+		ListenableGraph<LengthData> g = createGraph();
 		PheromoneVirtualGraphRoadModel pheromoneVirtualModel = new PheromoneVirtualGraphRoadModel(
 				g);
 

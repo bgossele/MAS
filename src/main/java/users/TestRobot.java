@@ -36,12 +36,13 @@ import communication.ExplorationReport;
 import communication.ParcelAccept;
 import communication.ParcelAllocation;
 import communication.ParcelBid;
+import communication.ParcelCancellation;
 import communication.ParcelOffer;
 
 public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		SimulatorUser {
 
-	public static final int DEFAULT_HOP_LIMIT = 10;
+	public static final int DEFAULT_HOP_LIMIT = 2;
 
 	private CollisionGraphRoadModel roadModel;
 	private Point destination;
@@ -53,6 +54,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	private Parcel parcel;
 	private boolean acceptedParcel;
 	private boolean pickedUpParcel;
+	private int tickCount = 0;
 
 	public TestRobot(Point start) {
 		roadModel = null;
@@ -79,19 +81,20 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1, simulator);
+		if(tickCount % 11 == 0){
+			ExplorationAntFactory.build(lastHop, this, DEFAULT_HOP_LIMIT, 1, simulator);
+		}
+		tickCount ++;
 		
 		if(destination != null) {
 			if(destination.equals(getPosition().get())) {
 				//parcel reached
 				if(!pickedUpParcel) {
-					System.out.println("Pickup");
 					parcel.pickUp();
 					destination = parcel.getDestination();
 					pickedUpParcel = true;
 				} else {
-					System.out.println("Deliver");
-					parcel.drop(getPosition().get());
+					parcel.dropAndDeliver(getPosition().get());
 					destination = null;
 					parcel = null;
 					pickedUpParcel = false;
@@ -118,7 +121,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		}
 		
 		List<Pheromone> pheromones = getPheromones(path_with_origin);
-		for(int i = 0; i < path_with_origin.size(); i++){
+		for(int i = 0; i < Math.min(path_with_origin.size(), DEFAULT_HOP_LIMIT); i++){
 			ReservationAntFactory.build(path_with_origin.get(i), pheromones.get(i), simulator);
 		}
 	}
@@ -161,7 +164,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 			if (content instanceof ExplorationReport) {
 				ExplorationReport rep = (ExplorationReport) content;
 				pheromones.put(rep.pos, rep.pheromones);
-			} else if (!acceptedParcel) {
+			} else if (!pickedUpParcel) {
 				if (content instanceof ParcelOffer) {
 					ParcelOffer offer = (ParcelOffer) content;
 					Point des = offer.getPosition();
@@ -186,6 +189,15 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 			if(cost < min_cost) {
 				winner = p;
 				min_cost = cost;
+			}
+		}
+		if(acceptedParcel) {
+			int remainingCost = roadModel.getShortestPathTo(this, parcel.getPosition().get()).size();
+			if (min_cost < remainingCost) {
+				System.out.println("Changed my mind from " + parcel.getId() + " to " + winner.getId());
+				device.send(new ParcelCancellation(), parcel);
+			} else {
+				return;
 			}
 		}
 		device.send(new ParcelAccept(), winner);
