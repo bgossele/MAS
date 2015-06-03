@@ -265,11 +265,17 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		for (Parcel p : awardedParcels) {
 			int cost;
 			try {
-				cost = getShortestPathTo(roadModel.getPosition(this),
-						p.getPosition().get()).size();
-				if (cost < min_cost) {
+				List<Point> candidate_path = getShortestPathTo(roadModel.getPosition(this), p.getPosition().get());
+				if (candidate_path != null) {
+					cost = candidate_path.size();
+					if (cost < min_cost) {
+						winner = p;
+						min_cost = cost;
+					}
+				} else {
 					winner = p;
-					min_cost = cost;
+					min_cost = 0;
+					break;
 				}
 			} catch (PathNotFoundException e) {
 				System.err.println("PathNotFoundException in acceptClosestPackage");
