@@ -137,7 +137,11 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		readMessages();
 		if (path == null && destination != null) {
 			checkedPath = false;
-			path = getShortestPathTo(lastHop, destination);
+			try {
+				path = getShortestPathTo(lastHop, destination);
+			} catch (PathNotFoundException e) {
+				e.printStackTrace();
+			}
 			if(path != null && path.get(0).equals(path.get(1))) {
 				waitingTime = getTicksToWait();
 			}
@@ -287,7 +291,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		LinkedList<Point> path = constructListFromPointMuls(pointMuls);
 		System.out.println(id +": path:" + path);
 		if(path == null) {
-			thow new PathNotFoundException();
+			throw new PathNotFoundException();
 		}
 		return path;
 	}
