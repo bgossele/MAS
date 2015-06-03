@@ -55,12 +55,14 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	private boolean acceptedParcel;
 	private boolean pickedUpParcel;
 	private int tickCount = 0;
+	private final int id;
 
-	public TestRobot(Point start) {
+	public TestRobot(int id, Point start) {
 		roadModel = null;
 		// Robot will be placed at destination on initialization.
 		destination = start;
 		path = new LinkedList<>();
+		this.id = id;
 		device = null;
 		parcel = null;
 		pheromones = new HashMap<Point, List<PathPheromone>>();
@@ -82,7 +84,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if(tickCount % 11 == 0){
-			ExplorationAntFactory.build(lastHop, this, 0, tickCount, DEFAULT_HOP_LIMIT, simulator);
+//			ExplorationAntFactory.build(lastHop, this, id, tickCount, DEFAULT_HOP_LIMIT, simulator);
 		}
 		tickCount ++;
 		
@@ -202,6 +204,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		}
 		device.send(new ParcelAccept(), winner);
 		parcel = winner;
+		System.out.println("accepted parcel at distance " + min_cost);
 		acceptedParcel = true;
 		destination = winner.getPosition().get();
 	}
