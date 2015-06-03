@@ -274,7 +274,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		System.out.println(id + ": packet accepted - " + destination);
 	}
 
-	private LinkedList<Point> getShortestPathTo(Point from, Point to) {
+	private LinkedList<Point> getShortestPathTo(Point from, Point to) throws PathNotFoundException{
 		System.out.println(id + ": searching from " + from + " to " + to);
 		if (from.equals(to)) {
 			return null;
@@ -286,6 +286,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				to);
 		LinkedList<Point> path = constructListFromPointMuls(pointMuls);
 		System.out.println(id +": path:" + path);
+		if(path == null) {
+			thow new PathNotFoundException();
+		}
 		return path;
 	}
 
