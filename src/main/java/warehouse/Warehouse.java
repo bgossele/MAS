@@ -127,7 +127,7 @@ public final class Warehouse {
 		Graphs.addBiPath(g, matrix.row(5).values());
 
 		final Table<Integer, Integer, Point> matrix2 = createMatrix(10, 7,
-				new Point(30, 6));
+				new Point(30, 8));
 		for (final Map<Integer, Point> row : matrix2.rowMap().values()) {
 			Graphs.addBiPath(g, row.values());
 		}
@@ -136,7 +136,7 @@ public final class Warehouse {
 				.values());
 
 		Graphs.addPath(g, matrix2.get(2, 0), matrix.get(4, 4));
-		Graphs.addPath(g, matrix.get(5, 4), matrix2.get(4, 0));
+		Graphs.addPath(g, matrix.get(5, 4), matrix2.get(3, 0));
 
 		return new ListenableGraph<>(g);
 	}
