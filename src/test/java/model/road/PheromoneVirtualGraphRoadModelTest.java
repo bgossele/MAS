@@ -31,7 +31,8 @@ public class PheromoneVirtualGraphRoadModelTest {
 	Point point;
 	Robot robot;
 	ExplorationAnt ant;
-
+	Simulator sim;
+	
 	@Test
 	public void test() {
 		ListenableGraph<LengthData> g = createSimpleGraph();
@@ -39,7 +40,7 @@ public class PheromoneVirtualGraphRoadModelTest {
 		PheromoneVirtualGraphRoadModel pheromoneVirualModel = new PheromoneVirtualGraphRoadModel(
 				g);
 
-		Simulator sim = Simulator
+		sim = Simulator
 				.builder()
 				.addModel(
 						CollisionGraphRoadModel.builder(g).setVehicleLength(2d)
@@ -54,10 +55,8 @@ public class PheromoneVirtualGraphRoadModelTest {
 		sim.addTickListener(listner);
 
 		point = new Point(16, 16);
-		robot = new Robot(pheromoneVirualModel.getRandomPosition(sim.getRandomGenerator()));
+		robot = new Robot(0, pheromoneVirualModel.getRandomPosition(sim.getRandomGenerator()), 0);
 		sim.register(robot);
-		ant = ExplorationAntFactory.build(point, robot, 5, 5, sim);
-
 		sim.start();
 	}
 
@@ -119,6 +118,9 @@ public class PheromoneVirtualGraphRoadModelTest {
 		public void tick(TimeLapse timeLapse) {
 			ticks++;
 			switch (ticks) {
+			case 0:
+				ant = ExplorationAntFactory.build(point, robot, 5, 5, 0, sim);
+				break;
 			case 2:
 				PathPheromone pheromone1 = PathPheromoneFactory.build(0, Move.WAIT,
 						Move.WAIT, 0);
