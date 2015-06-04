@@ -132,8 +132,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					destination = null;
 					lastHop = getPosition().get();
 				}
-			} else if (checkedPath && path != null
-					&& path.get(1).equals(getPosition().get())) {
+			} else if (checkedPath && path.get(1).equals(getPosition().get())) {
 				if (waitingTime > 0) {
 					waitingTime--;
 				} else {
@@ -197,6 +196,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				reservationTime++;
 			} else {
 				checkedPath = checkPath();
+				System.out.println(id + ": checking path: " + checkedPath);
 				if (checkedPath == false) {
 					path = null;
 				}
@@ -232,18 +232,14 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			if (otherPheromonesOnPoint != null) {
 				for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
 					if (otherPheromone.getRobot() != id
+							&& otherPheromone.getGoal().equals(Move.SLEEP)
+							&& step <= 3) {
+						return false;
+					} else if (otherPheromone.getRobot() != id
 							&& otherPheromone.getTimeStamp() <= step + 1
-							&& otherPheromone.getTimeStamp() >= step - 1) {
-						if (step == 1) {
-							return false;
-						}
-						if (otherPheromone.getGoal().equals(Move.SLEEP)
-								&& step <= 3) {
-							return false;
-						}
-						if (id < otherPheromone.getRobot()) {
-							return false;
-						}
+							&& otherPheromone.getTimeStamp() >= step - 1
+							&& id < otherPheromone.getRobot()) {
+						return false;
 					}
 				}
 			}
@@ -258,11 +254,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			resPath = new LinkedList<Point>();
 			resPath.add(lastHop);
 			pheromones = new LinkedList<PathPheromone>();
-			pheromones.add(PathPheromoneFactory.build(1, Move.SLEEP,
+			pheromones.add(PathPheromoneFactory.build(0, Move.SLEEP,
 					Move.SLEEP, id));
 		} else {
 			resPath = path;
-			resPath.add(resPath.get(resPath.size() - 1));
 			pheromones = getPheromones(resPath);
 		}
 		for (int i = 0; i < resPath.size(); i++) {
@@ -462,21 +457,25 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private LinkedList<Point> getPathToFreeNeigbor() {
+		System.out.println(id + ": getPathToFreeNeigbor");
 		Graph<? extends ConnectionData> graph = roadModel.getGraph();
-		int biggestMinTimeStamp = 0;
-		for (PathPheromone pheromone : pheromones.get(lastHop)) {
-			if (pheromone.getTimeStamp() < biggestMinTimeStamp) {
-				biggestMinTimeStamp = pheromone.getTimeStamp();
+		int biggestMinTimeStamp = Integer.MAX_VALUE;
+		// initiating biggestMinTimeStamp with the value on the current node.
+		List<PathPheromone> otherPheromonesOnPoint = pheromones
+				.get(getPosition().get());
+		if (otherPheromonesOnPoint != null) {
+			for (PathPheromone pheromone : otherPheromonesOnPoint) {
+				if (pheromone.getTimeStamp() < biggestMinTimeStamp) {
+					biggestMinTimeStamp = pheromone.getTimeStamp();
+				}
 			}
 		}
 		LinkedList<Point> result = null;
-		for (Point nextPoint : graph.getOutgoingConnections(lastHop)) {
-			int possibleBiggestMinTimeStamp = 0;
-			if (pheromones.get(nextPoint) == null
-					|| pheromones.get(nextPoint).isEmpty()) {
-				possibleBiggestMinTimeStamp = Integer.MAX_VALUE;
-			} else {
-				for (PathPheromone pheromone : pheromones.get(nextPoint)) {
+		for (Point nextPoint : graph.getOutgoingConnections(getPosition().get())) {
+			int possibleBiggestMinTimeStamp = Integer.MAX_VALUE;
+			otherPheromonesOnPoint = pheromones.get(nextPoint);
+			if (otherPheromonesOnPoint != null) {
+				for (PathPheromone pheromone : otherPheromonesOnPoint) {
 					if (pheromone.getTimeStamp() < possibleBiggestMinTimeStamp) {
 						possibleBiggestMinTimeStamp = pheromone.getTimeStamp();
 					}
@@ -487,76 +486,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				result.add(lastHop);
 				result.add(nextPoint);
 			}
-
 		}
+		System.out.println(id +": result: " +result);
 		return result;
 	}
-
-	// private List<PointMul> getPathToNearestFreeNode() {
-	// Queue<PointTree> nodesToExpand = new ArrayDeque<PointTree>();
-	// PointTree root = new PointTree(lastHop);
-	// nodesToExpand.add(root);
-	// Graph<? extends ConnectionData> graph = roadModel.getGraph();
-	// int shortestPathLength = Integer.MAX_VALUE;
-	// List<PointMul> shortestPath = null;
-	// int biggestMinTimeStamp = 0;
-	// while (true) {
-	// PointTree currentNode = nodesToExpand.poll();
-	// if (currentNode == null) {
-	// break;
-	// }
-	// for (Point nextPoint : graph.getOutgoingConnections(currentNode
-	// .getPoint())) {
-	// PointTree nextNode = new PointTree(currentNode, nextPoint);
-	// if (!containsPoint(currentNode, nextNode.getPoint())) {
-	// currentNode.addChild(nextNode);
-	// int possibleBiggestMinTimeStamp = 0;
-	// if (pheromones.get(nextPoint) == null
-	// || pheromones.get(nextPoint).isEmpty()) {
-	// possibleBiggestMinTimeStamp = Integer.MAX_VALUE;
-	// } else {
-	// for (PathPheromone pheromone : pheromones
-	// .get(nextPoint)) {
-	// if (pheromone.getTimeStamp() < possibleBiggestMinTimeStamp) {
-	// possibleBiggestMinTimeStamp = pheromone
-	// .getTimeStamp();
-	// }
-	// }
-	// }
-	// if (possibleBiggestMinTimeStamp >= biggestMinTimeStamp) {
-	// List<PointMul> possiblePath = conflictAvoidance(nextNode);
-	// if (possiblePath != null) {
-	// int possiblelength = getLengthPointMulList(possiblePath);
-	// if (possibleBiggestMinTimeStamp == biggestMinTimeStamp) {
-	// if (possiblelength < shortestPathLength) {
-	// shortestPath = possiblePath;
-	// shortestPathLength = possiblelength;
-	// biggestMinTimeStamp = possibleBiggestMinTimeStamp;
-	// }
-	// } else {
-	// shortestPath = possiblePath;
-	// shortestPathLength = possiblelength;
-	// biggestMinTimeStamp = possibleBiggestMinTimeStamp;
-	// }
-	// }
-	// }
-	// nodesToExpand.add(nextNode);
-	// }
-	// }
-	// if (currentNode.getDepth() == shortestPathLength
-	// || currentNode.getDepth() > MAX_SEARCH_DEPTH) {
-	// break;
-	// }
-	// // if (currentNode.getDepth() != searchDepth) {
-	// // searchDepth = currentNode.getDepth();
-	// // System.out.println(id + ": searchdepth - " + searchDepth);
-	// // }
-	// }
-	// System.out.println(id + ": shortest path length to free node:"
-	// + shortestPathLength);
-	// return shortestPath;
-	//
-	// }
 
 	private static boolean containsPoint(PointTree tree, Point point) {
 		if (tree.getPoint().equals(point)) {
@@ -591,6 +524,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 							&& otherPheromone.getTimeStamp() <= step + 1
 							&& otherPheromone.getTimeStamp() >= step - 1) {
 						if (point.equals(pointMuls.get(0).getPoint())) {
+							// no backtracking possible
 							return null;
 						} else if (otherPheromone.getGoal().equals(
 								pheromone.getOrigin())) { // Head-on collision
@@ -658,7 +592,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 						} else {
 							System.out.println("collision end found");
 							collissionEndFound = true;
-							waitingTime = otherTimestamp + 2;
+							waitingTime = otherTimestamp;
 							break;
 						}
 					}
@@ -668,7 +602,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				System.out
 						.println("collision end found (other ends with waiting)");
 				collissionEndFound = true;
-				waitingTime = otherTimestamp + 2;
+				waitingTime = otherTimestamp;
 			}
 		}
 		PointMul collissionSpot = getFromPointMulList(pointMuls, step);
