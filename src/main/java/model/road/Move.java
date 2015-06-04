@@ -1,7 +1,7 @@
 package model.road;
 
 public enum Move {
-	WAIT, NORTH, EAST, SOUTH, WEST;
+	WAIT, NORTH, EAST, SOUTH, WEST, SLEEP;
 
 	private Move opposite;
 
@@ -11,6 +11,7 @@ public enum Move {
 		EAST.opposite = WEST;
 		SOUTH.opposite = NORTH;
 		WEST.opposite = EAST;
+		SLEEP.opposite = SLEEP;
 	}
 
 	public Move getOpposite() {
