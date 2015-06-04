@@ -141,8 +141,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					path = null;
 					// System.out.println(id + ": Hop reached - " + lastHop);
 				}
-			} else if (checkedPath) {
-				roadModel.moveTo(this, path.get(1), timeLapse);
+			} else {
+				if (checkedPath) {
+					roadModel.moveTo(this, path.get(1), timeLapse);
+				} else {
+					System.out.println(id + ": checkedPath false");
+				}
 			}
 		}
 		sendReservationAnts();
