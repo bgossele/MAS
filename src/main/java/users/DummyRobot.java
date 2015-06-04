@@ -12,9 +12,12 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+
+import javax.measure.Measure;
 
 import model.road.Move;
 import model.road.PathPheromone;
@@ -31,6 +34,8 @@ import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
 import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
+import com.github.rinde.rinsim.core.model.road.RoadUser;
+import com.github.rinde.rinsim.geom.Connection;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
@@ -43,13 +48,13 @@ import communication.ParcelOffer;
 public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 
 	public static final int DEFAULT_HOP_LIMIT = 10;
+	private static final boolean PRINT = false;
 
 	private CollisionGraphRoadModel roadModel;
 	private Point destination;
 	private LinkedList<Point> path;
 	private Point lastHop;
 	private CommDevice device;
-	private Map<Point, List<PathPheromone>> pheromones;
 	private Parcel parcel;
 	private boolean acceptedParcel;
 	private boolean pickedUpParcel;
@@ -63,7 +68,10 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 		this.id = id;
 		device = null;
 		parcel = null;
-		pheromones = new HashMap<Point, List<PathPheromone>>();
+	}
+	
+	public Point getLastHop() {
+		return lastHop;
 	}
 
 	@Override
@@ -102,9 +110,15 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 					logParcelDelivery(timeLapse.getTime());
 				}
 			} else {
-				MoveProgress mp = roadModel.followPath(this, path, timeLapse);
-				if (mp.travelledNodes().size() > 0) {
-					lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
+				if(!isNextHopOccupied()) {
+					print(id + ": heading for " + path.get(1));
+					MoveProgress mp = roadModel.followPath(this, path, timeLapse);
+					if (mp.travelledNodes().size() > 0) {
+						lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
+						logDistanceTraveled(timeLapse.getTime(), mp.distance().getValue(), 1);
+					}
+				} else {
+					print(id + ": road block; waiting on " + getPosition().get() + "; lastHop " + lastHop);
 				}
 			}
 		}
@@ -112,34 +126,15 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 		readMessages();
 	}
 	
-	public static List<PathPheromone> getPheromones(List<Point> path){
-		ArrayList<PathPheromone> res = new ArrayList<PathPheromone>();
-		for (int i = 0; i < path.size(); i++) {
-			Point current = path.get(i);
-			Move move = null;
-			if (i < path.size() - 1) {
-				Point next = path.get(i + 1);
-				double d_x = next.x - current.x;
-				double d_y = next.y - current.y;
-				if (d_x == 0 && d_y == 0){
-					move = Move.WAIT;
-				} else if (d_x > 0) {
-					move = Move.EAST;
-				} else if (d_x < 0) {
-					move = Move.WEST;
-				} else if (d_y > 0) {
-					move = Move.SOUTH;
-				} else if (d_y < 0) {
-					move = Move.NORTH;
-				}
-				res.add(PathPheromoneFactory.build(i, null, move, -5));
-				
-			} else {
-				move = Move.WAIT;
-				res.add(PathPheromoneFactory.build(i, null, move, -5));
+	private boolean isNextHopOccupied() {
+		for(RoadUser u: roadModel.getObjects()) {
+			DummyRobot d = (DummyRobot) u;
+			if(! d.equals(this) && (d.getLastHop().equals(path.get(1)) || d.getPosition().get().equals(path.get(1)))) {
+				print(id + ": road blocked by " + d);
+				return true;
 			}
 		}
-		return res;			
+		return false;
 	}
 	
 	private void readMessages() {
@@ -205,7 +200,7 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 		if(acceptedParcel) {
 			int remainingCost = roadModel.getShortestPathTo(this, parcel.getPosition().get()).size();
 			if (min_cost < remainingCost) {
-				System.out.println("Changed my mind from " + parcel.getId() + " to " + winner.getId());
+				print("Changed my mind from " + parcel.getId() + " to " + winner.getId());
 				device.send(new ParcelCancellation(), parcel);
 			} else {
 				return;
@@ -220,7 +215,6 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 
 	@Override
 	public void afterTick(TimeLapse timeLapse) {
-		pheromones.clear();
 		readMessages();
 		if(destination != null)
 			path = new LinkedList<>(roadModel.getShortestPathTo(roadModel.getPosition(this), destination));
@@ -237,6 +231,11 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 	@Override
 	public void setCommDevice(CommDeviceBuilder builder) {
 		device = builder.build();
+	}
+	
+	private void print(String s) {
+		if(PRINT)
+			System.out.println(s);
 	}
 
 }

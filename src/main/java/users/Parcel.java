@@ -26,7 +26,7 @@ import communication.ParcelOffer;
 
 public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUser {
 	
-	private static final boolean PRINT = true;
+	private static final boolean PRINT = false;
 	private Point position;
 	private Point destination;
 	private CommDevice device;
