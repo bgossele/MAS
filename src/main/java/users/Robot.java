@@ -440,7 +440,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
 					if (otherPheromone.getRobot() != id
 							&& otherPheromone.getGoal().equals(Move.SLEEP)) {
-						return null;
+						if(step <= 2) {
+							insertWaitingSpot(step, pointMuls);
+							pheremoneList = getPheromonesMul(pointMuls);
+							step = -1;
+							break;
+						}
 					} else if (otherPheromone.getRobot() != id
 							&& otherPheromone.getTimeStamp() <= step + 1
 							&& otherPheromone.getTimeStamp() >= step - 1) {
