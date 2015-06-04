@@ -9,6 +9,7 @@ import org.eclipse.swt.graphics.RGB;
 import rendering.HybridWarehouseRenderer;
 import rendering.VirtualUserRenderer;
 import model.road.PheromoneVirtualGraphRoadModel;
+import users.DummyRobot;
 import users.ExplorationAnt;
 import users.Parcel;
 import users.ParcelManager;
@@ -58,6 +59,7 @@ public final class Warehouse {
 
 		for (int i = 0; i < N_ROBOTS; i++) {
 			sim.register(new Robot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator()), N_ROBOTS));
+//			sim.register(new DummyRobot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator())));
 		}
 		
 		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim.getRandomGenerator(), sim));
