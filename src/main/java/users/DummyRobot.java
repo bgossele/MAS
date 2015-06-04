@@ -1,21 +1,25 @@
 package users;
 
-import java.util.ArrayDeque;
+import static java.nio.file.StandardOpenOption.APPEND;
+import static java.nio.file.StandardOpenOption.CREATE;
+
+import java.io.BufferedOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Queue;
 
 import model.road.Move;
 import model.road.PathPheromone;
 import model.road.PathPheromoneFactory;
-import model.road.PointTree;
 
-import com.github.rinde.rinsim.core.SimulatorAPI;
-import com.github.rinde.rinsim.core.SimulatorUser;
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
@@ -27,20 +31,16 @@ import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
 import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
-import com.github.rinde.rinsim.geom.ConnectionData;
-import com.github.rinde.rinsim.geom.Graph;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
-import communication.ExplorationReport;
 import communication.ParcelAccept;
 import communication.ParcelAllocation;
 import communication.ParcelBid;
 import communication.ParcelCancellation;
 import communication.ParcelOffer;
 
-public class TestRobot implements TickListener, MovingRoadUser, CommUser,
-		SimulatorUser {
+public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 
 	public static final int DEFAULT_HOP_LIMIT = 10;
 
@@ -50,14 +50,12 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	private Point lastHop;
 	private CommDevice device;
 	private Map<Point, List<PathPheromone>> pheromones;
-	private SimulatorAPI simulator;
 	private Parcel parcel;
 	private boolean acceptedParcel;
 	private boolean pickedUpParcel;
-	private int tickCount = 0;
 	private final int id;
 
-	public TestRobot(int id, Point start) {
+	public DummyRobot(int id, Point start) {
 		roadModel = null;
 		// Robot will be placed at destination on initialization.
 		destination = start;
@@ -80,13 +78,13 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	public double getSpeed() {
 		return 0.5;
 	}
+	
+	public String toString(){
+		return "<DummyRobot " + id + ">";
+	}
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if(tickCount % 11 == 0){
-//			ExplorationAntFactory.build(lastHop, this, id, tickCount, DEFAULT_HOP_LIMIT, simulator);
-		}
-		tickCount ++;
 		
 		if(destination != null) {
 			if(destination.equals(getPosition().get())) {
@@ -97,35 +95,21 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 					pickedUpParcel = true;
 				} else {
 					parcel.dropAndDeliver(getPosition().get());
+					acceptedParcel = false;System.out.println("Delivered " + parcel);
 					destination = null;
 					parcel = null;
 					pickedUpParcel = false;
-					acceptedParcel = false;
+					logParcelDelivery(timeLapse.getTime());
 				}
 			} else {
 				MoveProgress mp = roadModel.followPath(this, path, timeLapse);
 				if (mp.travelledNodes().size() > 0) {
 					lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
 				}
-				if(!lastHop.equals(destination))
-					sendReservationAnts();
 			}
 		}
 
 		readMessages();
-	}
-
-	private void sendReservationAnts() {
-		@SuppressWarnings("unchecked")
-		List<Point> path_with_origin = (List<Point>) path.clone();
-		if(path.getFirst() != getPosition().get()){
-			path_with_origin.add(0, lastHop);
-		}
-		
-		List<PathPheromone> pheromones = getPheromones(path_with_origin);
-		for(int i = 0; i < Math.min(path_with_origin.size(), DEFAULT_HOP_LIMIT); i++){
-			ReservationAntFactory.build(path_with_origin.get(i), pheromones.get(i), simulator, id);
-		}
 	}
 	
 	public static List<PathPheromone> getPheromones(List<Point> path){
@@ -163,10 +147,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		ArrayList<Parcel> awardedParcels = new ArrayList<Parcel>();
 		for (Message message : messages) {
 			MessageContents content = message.getContents();
-			if (content instanceof ExplorationReport) {
-				ExplorationReport rep = (ExplorationReport) content;
-				pheromones.put(rep.pos, rep.pheromones);
-			} else if (!pickedUpParcel) {
+			if (!pickedUpParcel) {
 				if (content instanceof ParcelOffer) {
 					ParcelOffer offer = (ParcelOffer) content;
 					Point des = offer.getPosition();
@@ -180,6 +161,34 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		}
 		if(awardedParcels.size() > 0) {
 			acceptClosestPackage(awardedParcels);
+		}
+	}
+	
+	private void logParcelDelivery(long time) {
+		String s = id + ":" + time / 1000 + "\n";
+		byte data[] = s.getBytes();
+		Path p = Paths.get("parcel_delivery_log.txt");
+		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
+				p, CREATE, APPEND))) {
+			out.write(data, 0, data.length);
+			out.close();
+		} catch (IOException x) {
+			System.err.println(x);
+		}
+	}
+
+	private void logDistanceTraveled(long time, double distance,
+			int deliveringPacket) {
+		String s = id + ":" + time / 1000 + ";" + distance + ";"
+				+ deliveringPacket + "\n";
+		byte data[] = s.getBytes();
+		Path p = Paths.get("distance_traveled_log.txt");
+		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
+				p, CREATE, APPEND))) {
+			out.write(data, 0, data.length);
+			out.close();
+		} catch (IOException x) {
+			System.err.println(x);
 		}
 	}
 
@@ -204,7 +213,7 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		}
 		device.send(new ParcelAccept(), winner);
 		parcel = winner;
-		System.out.println("accepted parcel at distance " + min_cost);
+		System.out.println("accepted " + parcel + " at distance " + min_cost);
 		acceptedParcel = true;
 		destination = winner.getPosition().get();
 	}
@@ -215,61 +224,6 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 		readMessages();
 		if(destination != null)
 			path = new LinkedList<>(roadModel.getShortestPathTo(roadModel.getPosition(this), destination));
-	}
-
-	public List<Point> getShortestPathTo(Point from, Point to) {
-		Queue<PointTree> nodesToExpand = new ArrayDeque<PointTree>();
-		PointTree fromTree = new PointTree(from);
-		nodesToExpand.add(fromTree);
-		expandNodes(nodesToExpand, fromTree, to);
-
-		return null;
-	}
-
-	private void expandNodes(Queue<PointTree> nodesToExpand,
-			PointTree fromTree, Point to) {
-		Graph<? extends ConnectionData> graph = roadModel.getGraph();
-		while (true) {
-			PointTree nextExpand = nodesToExpand.poll();
-			for (Point nextHop : graph.getOutgoingConnections(nextExpand
-					.getPoint())) {
-				PointTree nextHopTree = new PointTree(nextExpand, nextHop);
-				nextExpand.addChild(nextHopTree);
-				if (nextHop.equals(to)) {
-					// TODO check for conflict and calculate traversal time.
-					conflictAvoidance(nextHopTree);
-					
-				}
-				nodesToExpand.add(nextHopTree);
-			}
-		}
-
-	}
-
-	private void conflictAvoidance(PointTree nextHopTree) {
-		List<Point> path = constructPath(nextHopTree);
-		int step = 1;
-		while (true) {
-			Point point = path.get(step);
-			List<PathPheromone> pheremonesOnPoint = pheromones.get(point);
-			for (PathPheromone pheromone : pheremonesOnPoint) {
-				if (pheromone.getTimeStamp() == step) {
-					//TODO check for kind of conflict.
-				}
-			}
-		}
-	}
-
-	private List<Point> constructPath(PointTree nextHopTree) {
-		int depth = nextHopTree.getDepth();
-		List<Point> path = new ArrayList<Point>(depth + 1);
-		PointTree previousHopTree = nextHopTree;
-		for (int i = depth; i == 0; i--) {
-			path.add(i, previousHopTree.getPoint());
-			previousHopTree = previousHopTree.getParent();
-		}
-		path.add(depth, nextHopTree.getPoint());
-		return path;
 	}
 
 	@Override
@@ -283,11 +237,6 @@ public class TestRobot implements TickListener, MovingRoadUser, CommUser,
 	@Override
 	public void setCommDevice(CommDeviceBuilder builder) {
 		device = builder.build();
-	}
-
-	@Override
-	public void setSimulator(SimulatorAPI api) {
-		simulator = api;
 	}
 
 }

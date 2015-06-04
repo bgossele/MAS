@@ -26,7 +26,7 @@ import communication.ParcelOffer;
 
 public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUser {
 	
-	private static final boolean PRINT = false;
+	private static final boolean PRINT = true;
 	private Point position;
 	private Point destination;
 	private CommDevice device;
@@ -70,7 +70,7 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if(forSale){ // Start auction
-			print("Parcel " + parcel_id + " starting auction");
+			print("Parcel " + parcel_id + " starting auction at " + timeLapse.getTime()/1000);
 			device.broadcast(new ParcelOffer(position, destination));
 		}
 		
@@ -88,10 +88,10 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 				}
 				if(winner != null) {
 					this.sold = true;
-					this.forSale = false;
 					print("Parcel " + parcel_id + " accepted by " + winner + " at " + + timeLapse.getTime()/1000);
 				} else {
 					print("Parcel " + parcel_id + " not accepted at " + timeLapse.getTime()/1000);
+					this.forSale = true;
 				}
 				this.waitingForAcceptance = false;
 			} else {
@@ -118,7 +118,7 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 				this.acceptanceCounter = 0;
 				print("Parcel " + parcel_id + " awarded to " + winner + " at " + timeLapse.getTime()/1000);
 			} else {
-				print("Parcel " + parcel_id + " received no bids.");
+				print("Parcel " + parcel_id + " received no bids at " + timeLapse.getTime()/1000);
 			}
 		}		
 		
@@ -160,7 +160,7 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 	
 	@Override
 	public String toString(){
-		return "Parcel " + parcel_id + " @ " + position + " ; destination = " + destination + "; " + (sold? "" : " not" ) + " sold";
+		return "<Parcel " + parcel_id + " @ " + position + " ; dest = " + destination + "; " + (sold? "" : " not" ) + " sold>";
 	}
 	
 	private void print(String s){
