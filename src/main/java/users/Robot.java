@@ -137,16 +137,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				if (waitingTime > 0) {
 					waitingTime--;
 				} else {
-					lastHop = getPosition().get();
+					lastHop = getPosition().get();					
 					path = null;
 					// System.out.println(id + ": Hop reached - " + lastHop);
 				}
-			} else {
-				if (checkedPath) {
-					roadModel.moveTo(this, path.get(1), timeLapse);
-				} else {
-					System.out.println(id + ": checkedPath false");
-				}
+			} else if (checkedPath) {
+				roadModel.moveTo(this, path.get(1), timeLapse);
 			}
 		}
 		sendReservationAnts();
@@ -156,7 +152,19 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		String s = id + ":" + time / 1000 + "\n";
 		byte data[] = s.getBytes();
 		Path p = Paths.get("parcel_delivery_log.txt");
-
+		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
+				p, CREATE, APPEND))) {
+			out.write(data, 0, data.length);
+			out.close();
+		} catch (IOException x) {
+			System.err.println(x);
+		}
+	}
+	
+	private void logDistanceTraveled(long time, double distance, int deliveringPacket) {
+		String s = id + ":" + time / 1000 + ";" + distance + ";" + deliveringPacket + "\n";
+		byte data[] = s.getBytes();
+		Path p = Paths.get("distance_traveled_log.txt");
 		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
 				p, CREATE, APPEND))) {
 			out.write(data, 0, data.length);
@@ -376,8 +384,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					break;
 				}
 			} catch (PathNotFoundException e) {
-				System.err
-						.println("PathNotFoundException in acceptClosestPackage");
+				System.err.println("PathNotFoundException in acceptClosestPackage");
 			}
 		}
 		if (winner != null) {
