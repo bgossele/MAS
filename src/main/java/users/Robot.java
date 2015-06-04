@@ -117,7 +117,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					path = null;
 					lastHop = getPosition().get();
 					System.out.println(id + ": Pickup - " + lastHop);
-				} else {
+				} else if (pickedUpParcel) {
 					parcel.dropAndDeliver(getPosition().get());
 					destination = null;
 					parcel = null;
@@ -142,10 +142,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		} else {
 			List<PathPheromone> phers = pheromones.get(lastHop);
 			boolean reserved = false;
-			for(PathPheromone p: phers) {
-				if (p.getRobot() != id) {
-					reserved = true;
-					break;
+			if(phers != null) {
+				for(PathPheromone p: phers) {
+					if (p.getRobot() != id) {
+						reserved = true;
+						break;
+					}
 				}
 			}
 			if(reserved) {
