@@ -43,7 +43,7 @@ public final class Warehouse {
 	 */
 	public static void main(String[] args) {
 
-		ListenableGraph<LengthData> g = createSimpleBiGraph();
+		ListenableGraph<LengthData> g = createGraph();
 		PheromoneVirtualGraphRoadModel pheromoneVirtualModel = new PheromoneVirtualGraphRoadModel(
 				g);
 
@@ -55,7 +55,7 @@ public final class Warehouse {
 				.addModel(CommModel.builder().build())
 				.addModel(pheromoneVirtualModel).build();
 
-		int nbRobots = 8;
+		int nbRobots = 4;
 		for (int i = 0; i < nbRobots; i++) {
 			sim.register(new Robot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator()), nbRobots));
 		}
@@ -154,7 +154,7 @@ public final class Warehouse {
 		Graphs.addBiPath(g, matrix.row(5).values());
 
 		final Table<Integer, Integer, Point> matrix2 = createMatrix(10, 7,
-				new Point(30, 8));
+				new Point(20, 8));
 		for (final Map<Integer, Point> row : matrix2.rowMap().values()) {
 			Graphs.addBiPath(g, row.values());
 		}
@@ -162,8 +162,8 @@ public final class Warehouse {
 		Graphs.addBiPath(g, matrix2.column(matrix2.columnKeySet().size() - 1)
 				.values());
 
-		Graphs.addPath(g, matrix2.get(2, 0), matrix.get(4, 4));
-		Graphs.addPath(g, matrix.get(5, 4), matrix2.get(3, 0));
+		Graphs.addBiPath(g, matrix2.get(2, 0), matrix.get(4, 4));
+		Graphs.addBiPath(g, matrix.get(5, 4), matrix2.get(3, 0));
 
 		return new ListenableGraph<>(g);
 	}
