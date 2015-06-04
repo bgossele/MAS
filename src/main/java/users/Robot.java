@@ -1,5 +1,12 @@
 package users;
 
+import java.io.BufferedOutputStream;
+import static java.nio.file.StandardOpenOption.*;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -112,6 +119,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					path = null;
 					lastHop = getPosition().get();
 					System.out.println(id + ": Deliver - " + lastHop);
+					logParcelDelivery(timeLapse.getTime());
 				}
 			} else if (path != null && path.get(1).equals(getPosition().get())) {
 				if (waitingTime > 0) {
@@ -127,6 +135,19 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			}
 		}
 		sendReservationAnts();
+	}
+	
+	private void logParcelDelivery(long time){
+		String s = id + ":" + time/1000 + "\n";
+	    byte data[] = s.getBytes();
+	    Path p = Paths.get("parcel_delivery_log.txt");
+
+	    try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(p, CREATE, APPEND))) {
+	      out.write(data, 0, data.length);
+	      out.close();
+	    } catch (IOException x) {
+	      System.err.println(x);
+	    }
 	}
 
 	@Override
