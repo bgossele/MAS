@@ -139,21 +139,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
 			}
-		} else {
-			List<PathPheromone> phers = pheromones.get(lastHop);
-			boolean reserved = false;
-			if(phers != null) {
-				for(PathPheromone p: phers) {
-					if (p.getRobot() != id) {
-						reserved = true;
-						break;
-					}
-				}
-			}
-			if(reserved) {
-				path = constructListFromPointMuls(getPathToNearestFreeNode());
-				destination = path.getLast();
-			}
 		}
 		sendReservationAnts();
 	}
@@ -196,6 +181,23 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				if (checkedPath == false) {
 					path = null;
 				}
+			}
+		} else if (destination == null) {
+			List<PathPheromone> phers = pheromones.get(lastHop);
+			boolean reserved = false;
+			if (phers != null) {
+				for (PathPheromone p : phers) {
+					if (p.getRobot() != id) {
+						reserved = true;
+						break;
+					}
+				}
+			}
+			if (reserved) {
+				checkedPath = false;
+				reservationTime = 0;
+				path = constructListFromPointMuls(getPathToNearestFreeNode());
+				destination = path.getLast();
 			}
 		}
 	}
@@ -431,7 +433,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		System.out.println(id + ": shortest path length:" + shortestPathLength);
 		return shortestPath;
 	}
-	
+
 	private List<PointMul> getPathToNearestFreeNode() {
 		Queue<PointTree> nodesToExpand = new ArrayDeque<PointTree>();
 		PointTree root = new PointTree(lastHop);
@@ -449,7 +451,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				PointTree nextNode = new PointTree(currentNode, nextPoint);
 				if (!containsPoint(currentNode, nextNode.getPoint())) {
 					currentNode.addChild(nextNode);
-					if (pheromones.get(nextPoint) == null || pheromones.get(nextPoint).isEmpty()) {
+					if (pheromones.get(nextPoint) == null
+							|| pheromones.get(nextPoint).isEmpty()) {
 						List<PointMul> possiblePath = conflictAvoidance(nextNode);
 						int possiblelength;
 						if (possiblePath == null) {
@@ -474,9 +477,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			// System.out.println(id + ": searchdepth - " + searchDepth);
 			// }
 		}
-		System.out.println(id + ": shortest path length to free node:" + shortestPathLength);
+		System.out.println(id + ": shortest path length to free node:"
+				+ shortestPathLength);
 		return shortestPath;
-		
+
 	}
 
 	private static boolean containsPoint(PointTree tree, Point point) {
@@ -502,7 +506,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
 					if (otherPheromone.getRobot() != id
 							&& otherPheromone.getGoal().equals(Move.SLEEP)) {
-						if(step <= 2) {
+						if (step <= 2) {
 							insertWaitingSpot(step, pointMuls);
 							pheremoneList = getPheromonesMul(pointMuls);
 							step = -1;
@@ -539,24 +543,26 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	private List<PointMul> findBacktrackPoint(List<PointMul> pointMuls,
 			int otherRobot, int otherTimestamp,
 			List<PathPheromone> pheromoneList, int step) {
-		System.out.println("findBacktrackPoint - otherRobot: " +otherRobot + " otherTimeStamp: " +otherTimestamp +"step: " +step );
-		System.out.println("pointMuls: " +pointMuls);
+		System.out.println("findBacktrackPoint - otherRobot: " + otherRobot
+				+ " otherTimeStamp: " + otherTimestamp + "step: " + step);
+		System.out.println("pointMuls: " + pointMuls);
 		int waitingTime = 0;
 		Boolean collissionEndFound = false;
 		int i = 0;
 		while (!collissionEndFound) {
 			System.out.println("main loop: " + i);
-			System.out.println("step: " +step +" otherTimeStamp: " +otherTimestamp);
+			System.out.println("step: " + step + " otherTimeStamp: "
+					+ otherTimestamp);
 			i++;
 			PathPheromone pheromone = pheromoneList.get(step);
 			Point point = getFromPointMulList(pointMuls, step).getPoint();
-			System.out.println("point: " +point + " pheromone: " +pheromone);
+			System.out.println("point: " + point + " pheromone: " + pheromone);
 			boolean conflictFound = false;
 			for (PathPheromone otherPheromone : pheromones.get(point)) {
 				System.out.println("for loop");
 				if (otherPheromone.getRobot() == otherRobot
 						&& otherPheromone.getTimeStamp() == otherTimestamp) {
-					System.out.println("other pheromone: " +otherPheromone);
+					System.out.println("other pheromone: " + otherPheromone);
 					if (point.equals(pointMuls.get(0).getPoint())) {
 						System.out.println("no escape");
 						return null;
@@ -574,15 +580,16 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					} else {
 						System.out.println("collision end found");
 						collissionEndFound = true;
-						waitingTime = otherTimestamp+1;
+						waitingTime = otherTimestamp + 1;
 						break;
 					}
 				}
 			}
-			if(conflictFound == false) {
-				System.out.println("collision end found (other ends with waiting)");
+			if (conflictFound == false) {
+				System.out
+						.println("collision end found (other ends with waiting)");
 				collissionEndFound = true;
-				waitingTime = otherTimestamp+1;
+				waitingTime = otherTimestamp + 1;
 			}
 		}
 		PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
@@ -597,7 +604,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				waitingTime -= pointMul.getMul();
 			}
 		}
-		System.out.println("result:" +pointMuls);
+		System.out.println("result:" + pointMuls);
 		return pointMuls;
 	}
 
