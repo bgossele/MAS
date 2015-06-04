@@ -127,8 +127,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				} else {
 					lastHop = getPosition().get();
 					path = null;
-					System.out.println(id + ": Hop reached - " + lastHop
-							+ " after " + tickCounter + " ticks");
+//					System.out.println(id + ": Hop reached - " + lastHop);
 				}
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
@@ -178,12 +177,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<Point> resPath;
 		if (path == null) {
 			resPath = new LinkedList<Point>();
-			for (int i = 0; i < 5; i++) {
+			for (int i = 0; i < 30; i++) {
 				resPath.add(lastHop);
 			}
 		} else {
 			resPath = path;
-			for (int i = path.size(); i < 6; i++) {
+			for (int i = path.size(); i < 30; i++) {
 				resPath.add(path.getLast());
 			}
 		}
