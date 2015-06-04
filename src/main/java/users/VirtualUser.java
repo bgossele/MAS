@@ -1,4 +1,5 @@
 package users;
+
 import model.road.VirtualRoadModel;
 
 public interface VirtualUser {

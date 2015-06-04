@@ -36,7 +36,7 @@ public class ParcelManager implements TickListener {
 				Parcel p = new Parcel(parcelCounter, start, destination);
 				parcelCounter++;
 				sim.register(p);
-//				System.out.println("Spawned " + p);
+				// System.out.println("Spawned " + p);
 			}
 		}
 	}

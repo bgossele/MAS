@@ -2,9 +2,6 @@ package model.road;
 
 import java.util.ArrayDeque;
 import java.util.Queue;
-import java.util.concurrent.ArrayBlockingQueue;
-
-import users.ExplorationAnt;
 
 public class ExploredPheromoneFactory {
 

@@ -9,7 +9,6 @@ import org.eclipse.swt.graphics.RGB;
 import rendering.HybridWarehouseRenderer;
 import rendering.VirtualUserRenderer;
 import model.road.PheromoneVirtualGraphRoadModel;
-import users.DummyRobot;
 import users.ExplorationAnt;
 import users.Parcel;
 import users.ParcelManager;
@@ -33,7 +32,7 @@ import com.google.common.collect.Table;
 
 public final class Warehouse {
 
-	private static final int N_ROBOTS = 8;
+	private static final int N_ROBOTS = 12;
 	private static final double VEHICLE_LENGTH = 2d;
 
 	private Warehouse() {
@@ -58,11 +57,14 @@ public final class Warehouse {
 				.addModel(pheromoneVirtualModel).build();
 
 		for (int i = 0; i < N_ROBOTS; i++) {
-			sim.register(new Robot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator()), N_ROBOTS));
-//			sim.register(new DummyRobot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator())));
+			sim.register(new Robot(i, pheromoneVirtualModel
+					.getRandomPosition(sim.getRandomGenerator()), N_ROBOTS));
+			// sim.register(new DummyRobot(i,
+			// pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator())));
 		}
-		
-		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim.getRandomGenerator(), sim));
+
+		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim
+				.getRandomGenerator(), sim));
 
 		sim.addTickListener(pheromoneVirtualModel);
 
@@ -70,17 +72,21 @@ public final class Warehouse {
 				.with(HybridWarehouseRenderer.builder().setMargin(
 						VEHICLE_LENGTH))
 				.with(AGVRenderer.builder().useDifferentColorsForVehicles())
-				.with(VirtualUserRenderer.builder()//.addTypeToRender(ExplorationAnt.class)
-												.addTypeToRender(ReservationAnt.class)
-												.addTypeToRender(Parcel.class)
-												.addColorAssociation(ExplorationAnt.class, new RGB(0,0,255))
-												.addColorAssociation(ReservationAnt.class, new RGB(255, 0, 0))
-												.addColorAssociation(Parcel.class, new RGB(0,0,0)))
+				.with(VirtualUserRenderer
+						.builder()
+						// .addTypeToRender(ExplorationAnt.class)
+						.addTypeToRender(ReservationAnt.class)
+						.addTypeToRender(Parcel.class)
+						.addColorAssociation(ExplorationAnt.class,
+								new RGB(0, 0, 255))
+						.addColorAssociation(ReservationAnt.class,
+								new RGB(255, 0, 0))
+						.addColorAssociation(Parcel.class, new RGB(0, 0, 0)))
 				.show();
 	}
 
-	public static ImmutableTable<Integer, Integer, Point> createMatrix(int cols,
-			int rows, Point offset) {
+	public static ImmutableTable<Integer, Integer, Point> createMatrix(
+			int cols, int rows, Point offset) {
 		final ImmutableTable.Builder<Integer, Integer, Point> builder = ImmutableTable
 				.builder();
 		for (int c = 0; c < cols; c++) {
@@ -117,7 +123,7 @@ public final class Warehouse {
 
 		return new ListenableGraph<>(g);
 	}
-	
+
 	public static ListenableGraph<LengthData> createSimpleBiGraph() {
 		final Graph<LengthData> g = new TableGraph<>();
 

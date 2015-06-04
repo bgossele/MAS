@@ -11,17 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import javax.measure.Measure;
-
-import model.road.Move;
-import model.road.PathPheromone;
-import model.road.PathPheromoneFactory;
 
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
@@ -35,7 +25,6 @@ import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.core.model.road.RoadUser;
-import com.github.rinde.rinsim.geom.Connection;
 import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
@@ -45,7 +34,7 @@ import communication.ParcelBid;
 import communication.ParcelCancellation;
 import communication.ParcelOffer;
 
-public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
+public class DummyRobot implements TickListener, MovingRoadUser, CommUser {
 
 	public static final int DEFAULT_HOP_LIMIT = 10;
 	private static final boolean PRINT = false;
@@ -69,7 +58,7 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 		device = null;
 		parcel = null;
 	}
-	
+
 	public Point getLastHop() {
 		return lastHop;
 	}
@@ -86,57 +75,64 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 	public double getSpeed() {
 		return 0.5;
 	}
-	
-	public String toString(){
+
+	public String toString() {
 		return "<DummyRobot " + id + ">";
 	}
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		
-		if(destination != null) {
-			if(destination.equals(getPosition().get())) {
-				//parcel reached
-				if(!pickedUpParcel) {
+
+		if (destination != null) {
+			if (destination.equals(getPosition().get())) {
+				// parcel reached
+				if (!pickedUpParcel) {
 					parcel.pickUp();
 					destination = parcel.getDestination();
 					pickedUpParcel = true;
 				} else {
 					parcel.dropAndDeliver(getPosition().get());
-					acceptedParcel = false;System.out.println("Delivered " + parcel);
+					acceptedParcel = false;
+					System.out.println("Delivered " + parcel);
 					destination = null;
 					parcel = null;
 					pickedUpParcel = false;
 					logParcelDelivery(timeLapse.getTime());
 				}
 			} else {
-				if(!isNextHopOccupied()) {
+				if (!isNextHopOccupied()) {
 					print(id + ": heading for " + path.get(1));
-					MoveProgress mp = roadModel.followPath(this, path, timeLapse);
+					MoveProgress mp = roadModel.followPath(this, path,
+							timeLapse);
 					if (mp.travelledNodes().size() > 0) {
-						lastHop = mp.travelledNodes().get(mp.travelledNodes().size() - 1);
-						logDistanceTraveled(timeLapse.getTime(), mp.distance().getValue(), 1);
+						lastHop = mp.travelledNodes().get(
+								mp.travelledNodes().size() - 1);
+						logDistanceTraveled(timeLapse.getTime(), mp.distance()
+								.getValue(), 1);
 					}
 				} else {
-					print(id + ": road block; waiting on " + getPosition().get() + "; lastHop " + lastHop);
+					print(id + ": road block; waiting on "
+							+ getPosition().get() + "; lastHop " + lastHop);
 				}
 			}
 		}
 
 		readMessages();
 	}
-	
+
 	private boolean isNextHopOccupied() {
-		for(RoadUser u: roadModel.getObjects()) {
+		for (RoadUser u : roadModel.getObjects()) {
 			DummyRobot d = (DummyRobot) u;
-			if(! d.equals(this) && (d.getLastHop().equals(path.get(1)) || d.getPosition().get().equals(path.get(1)))) {
+			if (!d.equals(this)
+					&& (d.getLastHop().equals(path.get(1)) || d.getPosition()
+							.get().equals(path.get(1)))) {
 				print(id + ": road blocked by " + d);
 				return true;
 			}
 		}
 		return false;
 	}
-	
+
 	private void readMessages() {
 		Collection<Message> messages = device.getUnreadMessages();
 		ArrayList<Parcel> awardedParcels = new ArrayList<Parcel>();
@@ -154,11 +150,11 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 				}
 			}
 		}
-		if(awardedParcels.size() > 0) {
+		if (awardedParcels.size() > 0) {
 			acceptClosestPackage(awardedParcels);
 		}
 	}
-	
+
 	private void logParcelDelivery(long time) {
 		String s = id + ":" + time / 1000 + "\n";
 		byte data[] = s.getBytes();
@@ -190,17 +186,20 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 	private void acceptClosestPackage(ArrayList<Parcel> awardedParcels) {
 		int min_cost = Integer.MAX_VALUE;
 		Parcel winner = null;
-		for(Parcel p: awardedParcels) {
-			int cost = roadModel.getShortestPathTo(this, p.getPosition().get()).size();
-			if(cost < min_cost) {
+		for (Parcel p : awardedParcels) {
+			int cost = roadModel.getShortestPathTo(this, p.getPosition().get())
+					.size();
+			if (cost < min_cost) {
 				winner = p;
 				min_cost = cost;
 			}
 		}
-		if(acceptedParcel) {
-			int remainingCost = roadModel.getShortestPathTo(this, parcel.getPosition().get()).size();
+		if (acceptedParcel) {
+			int remainingCost = roadModel.getShortestPathTo(this,
+					parcel.getPosition().get()).size();
 			if (min_cost < remainingCost) {
-				print("Changed my mind from " + parcel.getId() + " to " + winner.getId());
+				print("Changed my mind from " + parcel.getId() + " to "
+						+ winner.getId());
 				device.send(new ParcelCancellation(), parcel);
 			} else {
 				return;
@@ -216,8 +215,9 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 	@Override
 	public void afterTick(TimeLapse timeLapse) {
 		readMessages();
-		if(destination != null)
-			path = new LinkedList<>(roadModel.getShortestPathTo(roadModel.getPosition(this), destination));
+		if (destination != null)
+			path = new LinkedList<>(roadModel.getShortestPathTo(
+					roadModel.getPosition(this), destination));
 	}
 
 	@Override
@@ -232,9 +232,9 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser{
 	public void setCommDevice(CommDeviceBuilder builder) {
 		device = builder.build();
 	}
-	
+
 	private void print(String s) {
-		if(PRINT)
+		if (PRINT)
 			System.out.println(s);
 	}
 

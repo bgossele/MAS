@@ -29,7 +29,8 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 	/**
 	 * A mapping of {@link VirtualUser} to location.
 	 */
-	//protected volatile Map<VirtualUser, Loc> objLocs = new HashMap<VirtualUser, Loc>();
+	// protected volatile Map<VirtualUser, Loc> objLocs = new
+	// HashMap<VirtualUser, Loc>();
 
 	/**
 	 * Precision.
@@ -57,7 +58,7 @@ public class VirtualGraphRoadModel extends AbstractVirtualRoadModel<Loc> {
 		checkArgument(graph.containsNode(pos),
 				"Object must be initiated on a crossroad.");
 		super.addObjectAt(newObj, asLoc(pos));
-		
+
 	}
 
 	@Override

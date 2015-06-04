@@ -24,31 +24,31 @@ import com.google.common.base.MoreObjects;
 /**
  * Event representing a change in a {@link RoadModel}. See {@link RoadEventType}
  * for a list of event types.
+ * 
  * @author Rinde van Lon
  */
 public class VirtualRoadModelEvent extends Event {
 
-  /**
-   * The {@link RoadModel} that dispatched this event.
-   */
-  public final VirtualRoadModel roadModel;
+	/**
+	 * The {@link RoadModel} that dispatched this event.
+	 */
+	public final VirtualRoadModel roadModel;
 
-  /**
-   * The {@link RoadUser} that is involved in the event.
-   */
-  public final VirtualUser roadUser;
+	/**
+	 * The {@link RoadUser} that is involved in the event.
+	 */
+	public final VirtualUser roadUser;
 
-  VirtualRoadModelEvent(Enum<?> type, VirtualRoadModel rm, VirtualUser ru) {
-    super(type, rm);
-    roadModel = rm;
-    roadUser = ru;
-  }
+	VirtualRoadModelEvent(Enum<?> type, VirtualRoadModel rm, VirtualUser ru) {
+		super(type, rm);
+		roadModel = rm;
+		roadUser = ru;
+	}
 
-  @Override
-  public String toString() {
-    return MoreObjects.toStringHelper("RoadModelEvent")
-        .add("roadModel", roadModel)
-        .add("roadUser", roadUser)
-        .toString();
-  }
+	@Override
+	public String toString() {
+		return MoreObjects.toStringHelper("RoadModelEvent")
+				.add("roadModel", roadModel).add("roadUser", roadUser)
+				.toString();
+	}
 }

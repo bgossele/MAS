@@ -35,7 +35,7 @@ public class PheromoneVirtualGraphRoadModel extends VirtualGraphRoadModel
 				pathPheromones.put(location, list);
 			}
 			list.add((PathPheromone) pheromone);
-		} else if(pheromone instanceof ExploredPheromone) {
+		} else if (pheromone instanceof ExploredPheromone) {
 			List<ExploredPheromone> list = exploredPheromones.get(location);
 			if (list == null) {
 				list = new LinkedList<ExploredPheromone>();

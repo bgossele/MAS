@@ -1,6 +1,6 @@
 package model.road;
 
-public class PathPheromone extends Pheromone{
+public class PathPheromone extends Pheromone {
 
 	private int timeStamp;
 
@@ -34,10 +34,11 @@ public class PathPheromone extends Pheromone{
 	void setGoal(Move goal) {
 		this.goal = goal;
 	}
-	
+
 	@Override
-	public String toString(){
-		String s = "Pheromone <" +  timeStamp + " ; " +  origin + " ; " + goal + " ; " + getRobot() + ">";
+	public String toString() {
+		String s = "Pheromone <" + timeStamp + " ; " + origin + " ; " + goal
+				+ " ; " + getRobot() + ">";
 		return s;
 	}
 }

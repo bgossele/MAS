@@ -20,8 +20,8 @@ import com.google.common.base.Optional;
 
 import communication.ExplorationReport;
 
-public class ExplorationAnt extends Ant implements TickListener, VirtualUser, CommUser,
-		SimulatorUser {
+public class ExplorationAnt extends Ant implements TickListener, VirtualUser,
+		CommUser, SimulatorUser {
 
 	private boolean active;
 	private Optional<PheromoneVirtualGraphRoadModel> roadModel;
@@ -130,13 +130,13 @@ public class ExplorationAnt extends Ant implements TickListener, VirtualUser, Co
 			ExplorationAntFactory.returnAnt(this);
 		}
 
-	}	
+	}
 
 	@Override
 	public void setCommDevice(CommDeviceBuilder builder) {
 		device = Optional.of(builder.build());
 	}
-	
+
 	@Override
 	public Optional<Point> getPosition() {
 		if (roadModel.get().containsObject(this)) {

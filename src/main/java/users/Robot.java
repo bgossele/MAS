@@ -181,13 +181,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		readMessages();
 		if (path == null && destination != null) {
 			checkedPath = false;
-			try {
-				path = getShortestPathTo(lastHop, destination);
-				reservationTime = 0;
-				System.out.println(id + ": path reserved at " + tickCounter);
-			} catch (PathNotFoundException e) {
-				e.printStackTrace();
-			}
+			path = getShortestPathTo(lastHop, destination);
+			reservationTime = 0;
+			System.out.println(id + ": path reserved at " + tickCounter);
 			if (path != null && path.get(0).equals(path.get(1))) {
 				waitingTime = getTicksToWait();
 			}
@@ -203,16 +199,29 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			}
 		} else if (destination == null) {
 			List<PathPheromone> phers = pheromones.get(lastHop);
-			boolean reserved = false;
+			boolean needToMoveAway = false;
 			if (phers != null) {
 				for (PathPheromone p : phers) {
 					if (p.getRobot() != id) {
-						reserved = true;
+						needToMoveAway = true;
 						break;
 					}
 				}
 			}
-			if (reserved) {
+			Graph<? extends ConnectionData> graph = roadModel.getGraph();
+			for (Point point : graph.getOutgoingConnections(lastHop)) {
+				List<PathPheromone> otherPheromonesOnPoint = pheromones
+						.get(point);
+				if (otherPheromonesOnPoint != null) {
+					for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
+						if (otherPheromone.getGoal().equals(Move.SLEEP)) {
+							needToMoveAway = true;
+							break;
+						}
+					}
+				}
+			}
+			if (needToMoveAway) {
 				System.out.println(id + ": moving out of the way");
 				checkedPath = false;
 				reservationTime = 0;
@@ -237,9 +246,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 						return false;
 					} else if (otherPheromone.getRobot() != id
 							&& otherPheromone.getTimeStamp() <= step + 1
-							&& otherPheromone.getTimeStamp() >= step - 1
-							&& id < otherPheromone.getRobot()) {
-						return false;
+							&& otherPheromone.getTimeStamp() >= step - 1) {
+						if (step <= 1) {
+							return false;
+						} else if (id < otherPheromone.getRobot()) {
+							return false;
+						}
 					}
 				}
 			}
@@ -366,29 +378,24 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		Parcel winner = null;
 		for (Parcel p : awardedParcels) {
 			int cost;
-			try {
-				Point pos;
-				if (path != null) {
-					pos = path.get(1);
-				} else {
-					pos = lastHop;
-				}
-				List<Point> candidate_path = getShortestPathTo(pos, p
-						.getPosition().get());
-				if (candidate_path != null) {
-					cost = candidate_path.size();
-					if (cost < min_cost) {
-						winner = p;
-						min_cost = cost;
-					}
-				} else {
+			Point pos;
+			if (path != null) {
+				pos = path.get(1);
+			} else {
+				pos = lastHop;
+			}
+			List<Point> candidate_path = getShortestPathTo(pos, p.getPosition()
+					.get());
+			if (candidate_path != null) {
+				cost = candidate_path.size();
+				if (cost < min_cost) {
 					winner = p;
-					min_cost = 0;
-					break;
+					min_cost = cost;
 				}
-			} catch (PathNotFoundException e) {
-				System.err
-						.println("PathNotFoundException in acceptClosestPackage");
+			} else {
+				winner = p;
+				min_cost = 0;
+				break;
 			}
 		}
 		if (winner != null) {
@@ -400,8 +407,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		}
 	}
 
-	private LinkedList<Point> getShortestPathTo(Point from, Point to)
-			throws PathNotFoundException {
+	private LinkedList<Point> getShortestPathTo(Point from, Point to) {
 		System.out.println(id + ": searching from " + from + " to " + to);
 		if (from.equals(to)) {
 			return null;
@@ -412,7 +418,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		List<PointMul> pointMuls = doGetShortestPathTo(nodesToExpand, fromTree,
 				to);
 		if (pointMuls == null) {
-			throw new PathNotFoundException();
+			return null;
 		}
 		LinkedList<Point> path = constructListFromPointMuls(pointMuls);
 		System.out.println(id + ": path:" + path);
@@ -465,29 +471,52 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				.get(getPosition().get());
 		if (otherPheromonesOnPoint != null) {
 			for (PathPheromone pheromone : otherPheromonesOnPoint) {
-				if (pheromone.getTimeStamp() < biggestMinTimeStamp) {
-					biggestMinTimeStamp = pheromone.getTimeStamp();
+				int pherTimeStamp = Integer.MAX_VALUE;
+				if (pheromone.getGoal() == Move.SLEEP) {
+					// sleeping is less desirable then empty.
+					pherTimeStamp = Integer.MAX_VALUE - 1;
+				} else if (pheromone.getRobot() != id) {
+					pherTimeStamp = pheromone.getTimeStamp();
+				}
+				if (pherTimeStamp < biggestMinTimeStamp) {
+					biggestMinTimeStamp = pherTimeStamp;
 				}
 			}
 		}
+		System.out.println("on node biggestMinTimeStamp: "
+				+ biggestMinTimeStamp);
 		LinkedList<Point> result = null;
-		for (Point nextPoint : graph.getOutgoingConnections(getPosition().get())) {
+		for (Point nextPoint : graph
+				.getOutgoingConnections(getPosition().get())) {
 			int possibleBiggestMinTimeStamp = Integer.MAX_VALUE;
 			otherPheromonesOnPoint = pheromones.get(nextPoint);
 			if (otherPheromonesOnPoint != null) {
 				for (PathPheromone pheromone : otherPheromonesOnPoint) {
-					if (pheromone.getTimeStamp() < possibleBiggestMinTimeStamp) {
-						possibleBiggestMinTimeStamp = pheromone.getTimeStamp();
+					int pherTimeStamp = Integer.MAX_VALUE;
+					if (pheromone.getGoal() == Move.SLEEP) {
+						// sleeping is less desirable then empty.
+						pherTimeStamp = Integer.MAX_VALUE - 1;
+					} else if (pheromone.getRobot() != id) {
+						pherTimeStamp = pheromone.getTimeStamp();
+					}
+					if (pherTimeStamp < possibleBiggestMinTimeStamp) {
+						possibleBiggestMinTimeStamp = pherTimeStamp;
 					}
 				}
 			}
+			System.out.println("neighbor biggestMinTimeStamp: "
+					+ possibleBiggestMinTimeStamp);
 			if (possibleBiggestMinTimeStamp > biggestMinTimeStamp) {
-				result = new LinkedList<Point>();
-				result.add(lastHop);
-				result.add(nextPoint);
+				System.out.println("found better neigbor");
+				LinkedList<Point> posResult = getShortestPathTo(getPosition()
+						.get(), nextPoint);
+				if (posResult != null) {
+					result = posResult;
+					biggestMinTimeStamp = possibleBiggestMinTimeStamp;
+				}
 			}
 		}
-		System.out.println(id +": result: " +result);
+		System.out.println(id + ": result: " + result);
 		return result;
 	}
 

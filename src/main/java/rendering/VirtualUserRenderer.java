@@ -57,12 +57,12 @@ public final class VirtualUserRenderer implements ModelRenderer {
 	private final UiSchema uiSchema;
 	private final Optional<ViewRect> viewRect;
 	private final Set<String> typesToRender;
-	
-	private final int[] colors = {SWT.COLOR_BLUE,
-		      SWT.COLOR_RED, SWT.COLOR_GREEN, SWT.COLOR_CYAN, SWT.COLOR_MAGENTA,
-		      SWT.COLOR_YELLOW, SWT.COLOR_DARK_BLUE, SWT.COLOR_DARK_RED,
-		      SWT.COLOR_DARK_GREEN, SWT.COLOR_DARK_CYAN, SWT.COLOR_DARK_MAGENTA,
-		      SWT.COLOR_DARK_YELLOW};
+
+	private final int[] colors = { SWT.COLOR_BLUE, SWT.COLOR_RED,
+			SWT.COLOR_GREEN, SWT.COLOR_CYAN, SWT.COLOR_MAGENTA,
+			SWT.COLOR_YELLOW, SWT.COLOR_DARK_BLUE, SWT.COLOR_DARK_RED,
+			SWT.COLOR_DARK_GREEN, SWT.COLOR_DARK_CYAN, SWT.COLOR_DARK_MAGENTA,
+			SWT.COLOR_DARK_YELLOW };
 
 	/**
 	 * @deprecated Use {@link #builder()} instead.
@@ -84,8 +84,8 @@ public final class VirtualUserRenderer implements ModelRenderer {
 	 * @deprecated Use {@link #builder()} instead.
 	 */
 	@Deprecated
-	public VirtualUserRenderer(@Nullable ViewRect rect, @Nullable UiSchema schema,
-			boolean useEncirclement) {
+	public VirtualUserRenderer(@Nullable ViewRect rect,
+			@Nullable UiSchema schema, boolean useEncirclement) {
 		this(null, Optional.fromNullable(rect), schema == null ? new UiSchema()
 				: schema, useEncirclement, null);
 	}
@@ -111,10 +111,10 @@ public final class VirtualUserRenderer implements ModelRenderer {
 			for (final Entry<VirtualUser, Point> entry : objects.entrySet()) {
 				final Point p = entry.getValue();
 				final Class<?> type = entry.getKey().getClass();
-				
-				if(!typesToRender.contains(type.getName()))
+
+				if (!typesToRender.contains(type.getName()))
 					continue;
-					
+
 				final Image image = uiSchema.getImage(type);
 				final int x = vp.toCoordX(p.x) - radius;
 				final int y = vp.toCoordY(p.y) - radius;
@@ -125,10 +125,11 @@ public final class VirtualUserRenderer implements ModelRenderer {
 					gc.drawImage(image, offsetX, offsetY);
 				} else {
 					Color color = null;
-					if(entry.getKey() instanceof ReservationAnt) {
+					if (entry.getKey() instanceof ReservationAnt) {
 						ReservationAnt ant = (ReservationAnt) entry.getKey();
 						if (ant.getRobotId() < colors.length) {
-							color = gc.getDevice().getSystemColor(colors[ant.getRobotId()]);
+							color = gc.getDevice().getSystemColor(
+									colors[ant.getRobotId()]);
 						} else {
 							color = uiSchema.getColor(type);
 						}
@@ -270,8 +271,8 @@ public final class VirtualUserRenderer implements ModelRenderer {
 			uiSchema.add(type, rgb);
 			return this;
 		}
-		
-		public Builder addTypeToRender(Class<?> type){
+
+		public Builder addTypeToRender(Class<?> type) {
 			typesToRender.add(type.getName());
 			return this;
 		}
@@ -302,7 +303,8 @@ public final class VirtualUserRenderer implements ModelRenderer {
 			}
 			final VirtualRoadModel rm = mp.getModel(VirtualRoadModel.class);
 
-			return new VirtualUserRenderer(rm, viewRect, uiSchema, useEncirclement, typesToRender);
+			return new VirtualUserRenderer(rm, viewRect, uiSchema,
+					useEncirclement, typesToRender);
 		}
 
 		@Override

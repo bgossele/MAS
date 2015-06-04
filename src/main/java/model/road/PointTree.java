@@ -30,7 +30,7 @@ public class PointTree {
 	public PointTree getParent() {
 		return parent;
 	}
-	
+
 	public Point getPoint() {
 		return point;
 	}

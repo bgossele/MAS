@@ -88,7 +88,8 @@ public final class HybridWarehouseRenderer implements CanvasRenderer {
 	private final boolean showNodes;
 	private final Point arrowDimensions;
 
-	HybridWarehouseRenderer(Builder builder, CollisionGraphRoadModel m, VirtualGraphRoadModel vm) {
+	HybridWarehouseRenderer(Builder builder, CollisionGraphRoadModel m,
+			VirtualGraphRoadModel vm) {
 		model = m;
 		virtual_model = vm;
 		graph = model.getGraph();
