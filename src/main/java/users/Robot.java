@@ -616,70 +616,71 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	private List<PointMul> findBacktrackPoint(List<PointMul> pointMuls,
 			int otherRobot, int otherTimestamp,
 			List<PathPheromone> pheromoneList, int step) {
-		return null;
-//		System.out.println("findBacktrackPoint - otherRobot: " + otherRobot
-//				+ " otherTimeStamp: " + otherTimestamp + "step: " + step);
-//		System.out.println("pointMuls: " + pointMuls);
-//		int waitingTime = 0;
-//		Boolean collissionEndFound = false;
-//		int i = 0;
-//		while (!collissionEndFound) {
-//			System.out.println("main loop: " + i);
-//			System.out.println("step: " + step + " otherTimeStamp: "
-//					+ otherTimestamp);
-//			i++;
-//			PathPheromone pheromone = pheromoneList.get(step);
-//			Point point = getFromPointMulList(pointMuls, step).getPoint();
-//			System.out.println("point: " + point + " pheromone: " + pheromone);
-//			boolean conflictFound = false;
-//			for (PathPheromone otherPheromone : pheromones.get(point)) {
-//				System.out.println("for loop");
-//				if (otherPheromone.getRobot() == otherRobot
-//						&& otherPheromone.getTimeStamp() == otherTimestamp) {
-//					System.out.println("other pheromone: " + otherPheromone);
-//					if (point.equals(pointMuls.get(0).getPoint())) {
-//						System.out.println("no escape");
-//						return null;
-//					} else if (otherPheromone.getGoal().equals(
-//							pheromone.getOrigin())) {
-//						System.out.println("conflict found");
-//						conflictFound = true;
-//						step--;
-//						otherTimestamp++;
-//						break;
-//					} else if (otherPheromone.getGoal().equals(Move.WAIT)) {
-//						System.out.println("wait found");
-//						otherTimestamp++;
-//						break;
-//					} else {
-//						System.out.println("collision end found");
-//						collissionEndFound = true;
-//						waitingTime = otherTimestamp + 1;
-//						break;
-//					}
-//				}
-//			}
-//			if (conflictFound == false) {
-//				System.out
-//						.println("collision end found (other ends with waiting)");
-//				collissionEndFound = true;
-//				waitingTime = otherTimestamp + 1;
-//			}
-//		}
-//		PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
-//		boolean waitingInserted = false;
-//		for (PointMul pointMul : pointMuls) {
-//			if (waitingInserted) {
-//				pointMul.setMul(1);
-//			} else if (pointMul.equals(waitingSpot)) {
-//				pointMul.setMul(waitingTime + 1);
-//				waitingInserted = true;
-//			} else {
-//				waitingTime -= pointMul.getMul();
-//			}
-//		}
-//		System.out.println("result:" + pointMuls);
-//		return pointMuls;
+		System.out.println("findBacktrackPoint - otherRobot: " + otherRobot
+				+ " otherTimeStamp: " + otherTimestamp + "step: " + step);
+		System.out.println("pointMuls: " + pointMuls);
+		int waitingTime = 0;
+		Boolean collissionEndFound = false;
+		int i = 0;
+		while (!collissionEndFound) {
+			System.out.println("main loop: " + i);
+			System.out.println("step: " + step + " otherTimeStamp: "
+					+ otherTimestamp);
+			i++;
+			PathPheromone pheromone = pheromoneList.get(step);
+			Point point = getFromPointMulList(pointMuls, step).getPoint();
+			System.out.println("point: " + point + " pheromone: " + pheromone);
+			boolean conflictFound = false;
+			for (PathPheromone otherPheromone : pheromones.get(point)) {
+				System.out.println("for loop");
+				if (otherPheromone.getRobot() == otherRobot
+						&& otherPheromone.getTimeStamp() == otherTimestamp) {
+					System.out.println("other pheromone: " + otherPheromone);
+					if (point.equals(pointMuls.get(0).getPoint())) {
+						System.out.println("no escape");
+						return null;
+					} else if (otherPheromone.getGoal().equals(
+							pheromone.getOrigin())) {
+						System.out.println("conflict found");
+						conflictFound = true;
+						step--;
+						otherTimestamp++;
+						break;
+					} else if (otherPheromone.getGoal().equals(Move.WAIT)) {
+						System.out.println("wait found");
+						otherTimestamp++;
+						break;
+					} else {
+						System.out.println("collision end found");
+						collissionEndFound = true;
+						waitingTime = otherTimestamp + 2;
+						break;
+					}
+				}
+			}
+			if (!conflictFound && !collissionEndFound) {
+				System.out
+						.println("collision end found (other ends with waiting)");
+				collissionEndFound = true;
+				waitingTime = otherTimestamp + 2;
+			}
+		}
+		PointMul collissionSpot = getFromPointMulList(pointMuls, step);
+		PointMul waitingSpot = pointMuls.get(pointMuls.indexOf(collissionSpot) -1);
+		
+		boolean waitingInserted = false;
+		for (PointMul pointMul : pointMuls) {
+			if (waitingInserted) {
+				pointMul.setMul(1);
+			} else if (pointMul.equals(waitingSpot)) {
+				pointMul.setMul(waitingTime + 1);
+				waitingInserted = true;
+			} else {
+				waitingTime -= pointMul.getMul();
+			}
+		}
+		System.out.println("result:" + pointMuls);
+		return pointMuls;
 	}
 
 	private static PointMul getFromPointMulList(List<PointMul> pointMuls,
