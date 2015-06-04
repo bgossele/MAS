@@ -19,7 +19,7 @@ import com.github.rinde.rinsim.geom.Point;
 import com.google.common.base.Optional;
 
 import communication.ParcelAccept;
-import communication.ParcelAllocation;
+import communication.ParcelAward;
 import communication.ParcelBid;
 import communication.ParcelCancellation;
 import communication.ParcelOffer;
@@ -118,7 +118,7 @@ public class Parcel implements CommUser, TickListener, VirtualUser,
 			}
 			if (bids.size() > 0) {
 				CommUser winner = getBestBidder(bids);
-				device.send(new ParcelAllocation(), winner);
+				device.send(new ParcelAward(), winner);
 				this.forSale = false;
 				this.waitingForAcceptance = true;
 				this.acceptanceCounter = 0;

@@ -43,7 +43,7 @@ import com.google.common.base.Optional;
 
 import communication.ExplorationReport;
 import communication.ParcelAccept;
-import communication.ParcelAllocation;
+import communication.ParcelAward;
 import communication.ParcelBid;
 import communication.ParcelOffer;
 
@@ -363,7 +363,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					int cost = roadModel.getShortestPathTo(this, des).size();
 					ParcelBid reply = new ParcelBid(cost);
 					device.send(reply, message.getSender());
-				} else if (content instanceof ParcelAllocation) {
+				} else if (content instanceof ParcelAward) {
 					awardedParcels.add((Parcel) message.getSender());
 				}
 			}
