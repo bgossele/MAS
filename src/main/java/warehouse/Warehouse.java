@@ -55,7 +55,7 @@ public final class Warehouse {
 				.addModel(CommModel.builder().build())
 				.addModel(pheromoneVirtualModel).build();
 
-		int nbRobots = 4;
+		int nbRobots = 8;
 		for (int i = 0; i < nbRobots; i++) {
 			sim.register(new Robot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator()), nbRobots));
 		}

@@ -22,6 +22,7 @@ import java.util.Queue;
 import model.road.Move;
 import model.road.PathPheromone;
 import model.road.PathPheromoneFactory;
+import model.road.Pheromone;
 import model.road.PointTree;
 
 import com.github.rinde.rinsim.core.SimulatorAPI;
@@ -127,6 +128,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					lastHop = getPosition().get();
 					System.out.println(id + ": Deliver - " + lastHop);
 					logParcelDelivery(timeLapse.getTime());
+				} else {
+					path = null;
+					destination = null;
+					lastHop = getPosition().get();
 				}
 			} else if (path != null && path.get(1).equals(getPosition().get())) {
 				if (waitingTime > 0) {
@@ -196,8 +201,11 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			if (reserved) {
 				checkedPath = false;
 				reservationTime = 0;
-				path = constructListFromPointMuls(getPathToNearestFreeNode());
-				destination = path.getLast();
+				List<PointMul> pointMuls = getPathToNearestFreeNode();
+				if (pointMuls != null) {
+					path = constructListFromPointMuls(pointMuls);
+					destination = path.getLast();
+				}
 			}
 		}
 	}
@@ -344,8 +352,14 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		for (Parcel p : awardedParcels) {
 			int cost;
 			try {
-				List<Point> candidate_path = getShortestPathTo(
-						roadModel.getPosition(this), p.getPosition().get());
+				Point pos;
+				if (path != null) {
+					pos = path.get(1);
+				} else {
+					pos = lastHop;
+				}
+				List<Point> candidate_path = getShortestPathTo(pos, p
+						.getPosition().get());
 				if (candidate_path != null) {
 					cost = candidate_path.size();
 					if (cost < min_cost) {
@@ -441,6 +455,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		Graph<? extends ConnectionData> graph = roadModel.getGraph();
 		int shortestPathLength = Integer.MAX_VALUE;
 		List<PointMul> shortestPath = null;
+		int biggestMinTimeStamp = 0;
 		while (true) {
 			PointTree currentNode = nodesToExpand.poll();
 			if (currentNode == null) {
@@ -451,18 +466,34 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				PointTree nextNode = new PointTree(currentNode, nextPoint);
 				if (!containsPoint(currentNode, nextNode.getPoint())) {
 					currentNode.addChild(nextNode);
+					int possibleBiggestMinTimeStamp = 0;
 					if (pheromones.get(nextPoint) == null
 							|| pheromones.get(nextPoint).isEmpty()) {
-						List<PointMul> possiblePath = conflictAvoidance(nextNode);
-						int possiblelength;
-						if (possiblePath == null) {
-							possiblelength = Integer.MAX_VALUE;
-						} else {
-							possiblelength = getLengthPointMulList(possiblePath);
+						possibleBiggestMinTimeStamp = Integer.MAX_VALUE;
+					} else {
+						for (PathPheromone pheromone : pheromones
+								.get(nextPoint)) {
+							if (pheromone.getTimeStamp() < possibleBiggestMinTimeStamp) {
+								possibleBiggestMinTimeStamp = pheromone
+										.getTimeStamp();
+							}
 						}
-						if (possiblelength < shortestPathLength) {
-							shortestPath = possiblePath;
-							shortestPathLength = possiblelength;
+					}
+					if (possibleBiggestMinTimeStamp >= biggestMinTimeStamp) {
+						List<PointMul> possiblePath = conflictAvoidance(nextNode);
+						if (possiblePath != null) {
+							int possiblelength = getLengthPointMulList(possiblePath);
+							if (possibleBiggestMinTimeStamp == biggestMinTimeStamp) {
+								if (possiblelength < shortestPathLength) {
+									shortestPath = possiblePath;
+									shortestPathLength = possiblelength;
+									biggestMinTimeStamp = possibleBiggestMinTimeStamp;
+								}
+							} else {
+								shortestPath = possiblePath;
+								shortestPathLength = possiblelength;
+								biggestMinTimeStamp = possibleBiggestMinTimeStamp;
+							}
 						}
 					}
 					nodesToExpand.add(nextNode);
@@ -506,7 +537,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
 					if (otherPheromone.getRobot() != id
 							&& otherPheromone.getGoal().equals(Move.SLEEP)) {
-						if (step <= 2) {
+						if (step <= 3) {
 							insertWaitingSpot(step, pointMuls);
 							pheremoneList = getPheromonesMul(pointMuls);
 							step = -1;
