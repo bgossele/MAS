@@ -332,6 +332,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				id));
 		return res;
 	}
+	
+	public String toString(){
+		return "<Robot " + id + ">";
+	}
 
 	private void readMessages() {
 		Collection<Message> messages = device.getUnreadMessages();

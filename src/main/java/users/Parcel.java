@@ -36,13 +36,14 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 	private SimulatorAPI sim;
 	private boolean delivered = false;
 	private boolean pickedUp = false;
+	private boolean waitingForAcceptance = false;
 	private int counter = 0;
 
 	Parcel(int parcel_id, Point position, Point destination) {
 		this.position = position;
 		this.destination = destination;
 		this.sold = false;
-		this.forSale = false;
+		this.forSale = true;
 		this.parcel_id = parcel_id;
 	}
 	
@@ -66,14 +67,14 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if(!sold){ // Start auction
+		if(forSale){ // Start auction
+			System.out.println("Parcel " + parcel_id + " starting auction");
 			device.broadcast(new ParcelOffer(position, destination));
-			this.forSale = true;
 		}
 		
 		List<Message> messages = device.getUnreadMessages();
 		
-		if (forSale) {
+		if (forSale) { // Get bids
 			
 			ArrayList<Message> bids = new ArrayList<Message>();	
 			
@@ -81,24 +82,42 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 				MessageContents content = m.getContents();
 				if(content instanceof ParcelBid){
 					bids.add(m);
-				} else if (content instanceof ParcelAccept) {
-					this.sold = true;
-					this.forSale = false;
+					System.out.println("Parcel " + parcel_id + " received bid from " + m.getSender() + " at " + timeLapse.getTime()/1000);
 				}
 			}
 			if(bids.size() > 0) {
 				CommUser winner = getBestBidder(bids);
+				this.forSale = false;
+				System.out.println("Parcel " + parcel_id + " awarded to " + winner + " at " + timeLapse.getTime()/1000);
+				this.waitingForAcceptance = true;
 				device.send(new ParcelAllocation(), winner);
 			} else {
-				//System.out.println("Parcel " + parcel_id + " received no bids.");
+				System.out.println("Parcel " + parcel_id + " received no bids.");
 			}
 		}
+		
+		if (waitingForAcceptance) {
+			for(Message m: messages) {
+				MessageContents content = m.getContents();
+				if(content instanceof ParcelAccept){
+					this.sold = true;
+					this.forSale = false;
+					System.out.println("Parcel " + parcel_id + " accepted by " + m.getSender());
+					break;
+				}
+			}
+			System.out.println("Parcel " + parcel_id + " not accepted.");
+		}
+		
+		this.waitingForAcceptance = false;
 		
 		if (sold && !pickedUp) {
 			for(Message m: messages) {
 				MessageContents c = m.getContents();
 				if(c instanceof ParcelCancellation) {
 					this.sold = false;
+					this.forSale = true;
+					System.out.println("Parcel " + parcel_id + " cancelled by " + m.getSender() + " at " + timeLapse.getTime()/1000);
 				}
 			}
 		}
