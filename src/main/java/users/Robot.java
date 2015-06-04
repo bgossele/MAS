@@ -44,6 +44,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	public static final int DEFAULT_HOP_LIMIT = 10;
 
 	public static final int MAX_SEARCH_DEPTH = 500;
+	
+	public static final int RESERVATION_SPEED = 2;
 
 	private CollisionGraphRoadModel roadModel;
 	private Point destination;
@@ -56,11 +58,13 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	private boolean acceptedParcel;
 	private boolean pickedUpParcel;
 	private boolean checkedPath;
+	private int reservationTime;
 	private int tickCounter = 0;
 	private final int id;
 	int waitingTime = 0;
+	int nbRobots;
 
-	public Robot(int id, Point start) {
+	public Robot(int id, Point start, int nbRobots) {
 		roadModel = null;
 		// Robot will be placed at destination on initialization.
 		destination = start;
@@ -68,6 +72,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		device = null;
 		parcel = null;
 		this.id = id;
+		this.nbRobots = nbRobots;
 		pheromones = new HashMap<Point, List<PathPheromone>>();
 	}
 
@@ -85,7 +90,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private int getTicksToWait() {
-		return (int) Math.round(Math.ceil(15 / getSpeed()));
+		return (int) Math.round(15 / getSpeed());
 	}
 
 	@Override
@@ -137,20 +142,49 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			checkedPath = false;
 			try {
 				path = getShortestPathTo(lastHop, destination);
+				reservationTime = 0;
+				System.out.println(id + ": path reserved at " + tickCounter);
 			} catch (PathNotFoundException e) {
 				e.printStackTrace();
 			}
 			if (path != null && path.get(0).equals(path.get(1))) {
 				waitingTime = getTicksToWait();
 			}
-		} else if (!checkedPath) {
-			checkedPath();
+		} else if (path != null && !checkedPath) {
+			if(reservationTime != RESERVATION_SPEED) {
+				reservationTime ++;
+			} else {
+				checkedPath = checkPath(timeLapse);
+				if(checkedPath == false) {
+					path = null;
+				}
+			}
 		}
 	}
 
-	private void checkedPath() {
-		// TODO checkPathForCollisions
-		checkedPath = true;
+	private Boolean checkPath(TimeLapse timeLapse) {
+		int priorityShift = (int) ((timeLapse.getTime() / 1000) % nbRobots);
+		int priority = (id + priorityShift) % nbRobots;
+		for (int step = 0; step < path.size(); step++) {
+			Point point = path.get(step);
+			List<PathPheromone> otherPheromonesOnPoint = pheromones.get(point);
+			if (otherPheromonesOnPoint != null) {
+				for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
+					if (otherPheromone.getRobot() != id
+							&& otherPheromone.getTimeStamp() <= step + 1
+							&& otherPheromone.getTimeStamp() >= step - 1) {
+						if(step == 1) {
+							return false;
+						}
+						int otherPriority = (otherPheromone.getRobot() + priorityShift) % nbRobots;
+						if(priority< otherPriority) {
+							return false;
+						}
+					}
+				}
+			}
+		}
+		return true;
 	}
 
 	private void sendReservationAnts() {
@@ -416,11 +450,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		int waitingTime = 0;
 		Boolean collissionEndFound = false;
 		while (!collissionEndFound) {
-			System.out.println("1w");
 			PathPheromone pheromone = pheromoneList.get(step);
 			Point point = getFromPointMulList(pointMuls, step).getPoint();
 			for (PathPheromone otherPheromone : pheromones.get(point)) {
-				System.out.println("1f");
 				if (otherPheromone.getRobot() == robotId) {
 					if (point.equals(pointMuls.get(0).getPoint())) {
 						return null;
@@ -441,7 +473,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
 		boolean waitingInserted = false;
 		for (PointMul pointMul : pointMuls) {
-			System.out.println("2de");
 			if (waitingInserted) {
 				pointMul.setMul(1);
 			} else if (pointMul.equals(waitingSpot)) {

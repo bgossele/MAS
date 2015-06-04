@@ -55,8 +55,9 @@ public final class Warehouse {
 				.addModel(CommModel.builder().build())
 				.addModel(pheromoneVirtualModel).build();
 
-		for (int i = 0; i < 5; i++) {
-			sim.register(new Robot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator())));
+		int nbRobots = 4;
+		for (int i = 0; i < nbRobots; i++) {
+			sim.register(new Robot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator()), nbRobots));
 		}
 		
 		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim.getRandomGenerator(), sim));
