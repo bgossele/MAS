@@ -26,6 +26,7 @@ import communication.ParcelOffer;
 
 public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUser {
 	
+	private static final boolean PRINT = false;
 	private Point position;
 	private Point destination;
 	private CommDevice device;
@@ -37,6 +38,7 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 	private boolean delivered = false;
 	private boolean pickedUp = false;
 	private boolean waitingForAcceptance = false;
+	private int acceptanceCounter;
 	private int counter = 0;
 
 	Parcel(int parcel_id, Point position, Point destination) {
@@ -68,11 +70,34 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 	@Override
 	public void tick(TimeLapse timeLapse) {
 		if(forSale){ // Start auction
-			System.out.println("Parcel " + parcel_id + " starting auction");
+			print("Parcel " + parcel_id + " starting auction");
 			device.broadcast(new ParcelOffer(position, destination));
 		}
 		
 		List<Message> messages = device.getUnreadMessages();
+		
+		if (waitingForAcceptance) {
+			if(acceptanceCounter == 1) {
+				CommUser winner = null;
+				for(Message m: messages) {
+					MessageContents content = m.getContents();
+					if(content instanceof ParcelAccept){
+						winner = m.getSender();						
+						break;
+					}
+				}
+				if(winner != null) {
+					this.sold = true;
+					this.forSale = false;
+					print("Parcel " + parcel_id + " accepted by " + winner + " at " + + timeLapse.getTime()/1000);
+				} else {
+					print("Parcel " + parcel_id + " not accepted at " + timeLapse.getTime()/1000);
+				}
+				this.waitingForAcceptance = false;
+			} else {
+				acceptanceCounter ++;
+			}
+		}
 		
 		if (forSale) { // Get bids
 			
@@ -82,34 +107,20 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 				MessageContents content = m.getContents();
 				if(content instanceof ParcelBid){
 					bids.add(m);
-					System.out.println("Parcel " + parcel_id + " received bid from " + m.getSender() + " at " + timeLapse.getTime()/1000);
+					print("Parcel " + parcel_id + " received bid from " + m.getSender() + " at " + timeLapse.getTime()/1000);
 				}
 			}
 			if(bids.size() > 0) {
 				CommUser winner = getBestBidder(bids);
-				this.forSale = false;
-				System.out.println("Parcel " + parcel_id + " awarded to " + winner + " at " + timeLapse.getTime()/1000);
-				this.waitingForAcceptance = true;
 				device.send(new ParcelAllocation(), winner);
+				this.forSale = false;
+				this.waitingForAcceptance = true;
+				this.acceptanceCounter = 0;
+				print("Parcel " + parcel_id + " awarded to " + winner + " at " + timeLapse.getTime()/1000);
 			} else {
-				System.out.println("Parcel " + parcel_id + " received no bids.");
+				print("Parcel " + parcel_id + " received no bids.");
 			}
-		}
-		
-		if (waitingForAcceptance) {
-			for(Message m: messages) {
-				MessageContents content = m.getContents();
-				if(content instanceof ParcelAccept){
-					this.sold = true;
-					this.forSale = false;
-					System.out.println("Parcel " + parcel_id + " accepted by " + m.getSender());
-					break;
-				}
-			}
-			System.out.println("Parcel " + parcel_id + " not accepted.");
-		}
-		
-		this.waitingForAcceptance = false;
+		}		
 		
 		if (sold && !pickedUp) {
 			for(Message m: messages) {
@@ -117,7 +128,7 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 				if(c instanceof ParcelCancellation) {
 					this.sold = false;
 					this.forSale = true;
-					System.out.println("Parcel " + parcel_id + " cancelled by " + m.getSender() + " at " + timeLapse.getTime()/1000);
+					print("Parcel " + parcel_id + " cancelled by " + m.getSender() + " at " + timeLapse.getTime()/1000);
 				}
 			}
 		}
@@ -150,6 +161,12 @@ public class Parcel implements CommUser, TickListener, VirtualUser, SimulatorUse
 	@Override
 	public String toString(){
 		return "Parcel " + parcel_id + " @ " + position + " ; destination = " + destination + "; " + (sold? "" : " not" ) + " sold";
+	}
+	
+	private void print(String s){
+		if(PRINT)
+			System.out.println(s);
+			
 	}
 	
 	public void pickUp(){

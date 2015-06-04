@@ -32,6 +32,7 @@ import com.google.common.collect.Table;
 
 public final class Warehouse {
 
+	private static final int N_ROBOTS = 8;
 	private static final double VEHICLE_LENGTH = 2d;
 
 	private Warehouse() {
@@ -43,7 +44,7 @@ public final class Warehouse {
 	 */
 	public static void main(String[] args) {
 
-		ListenableGraph<LengthData> g = createGraph();
+		ListenableGraph<LengthData> g = createSimpleBiGraph();
 		PheromoneVirtualGraphRoadModel pheromoneVirtualModel = new PheromoneVirtualGraphRoadModel(
 				g);
 
@@ -55,9 +56,8 @@ public final class Warehouse {
 				.addModel(CommModel.builder().build())
 				.addModel(pheromoneVirtualModel).build();
 
-		int nbRobots = 4;
-		for (int i = 0; i < nbRobots; i++) {
-			sim.register(new Robot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator()), nbRobots));
+		for (int i = 0; i < N_ROBOTS; i++) {
+			sim.register(new Robot(i, pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator()), N_ROBOTS));
 		}
 		
 		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim.getRandomGenerator(), sim));
