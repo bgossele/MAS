@@ -187,8 +187,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private Boolean checkPath(TimeLapse timeLapse) {
-		int priorityShift = (int) ((timeLapse.getTime() / 1000) % nbRobots);
-		int priority = (id + priorityShift) % nbRobots;
 		for (int step = 0; step < path.size(); step++) {
 			Point point = path.get(step);
 			List<PathPheromone> otherPheromonesOnPoint = pheromones.get(point);
@@ -200,9 +198,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 						if (step == 1) {
 							return false;
 						}
-						int otherPriority = (otherPheromone.getRobot() + priorityShift)
-								% nbRobots;
-						if (priority < otherPriority) {
+						if (otherPheromone.getGoal().equals(Move.SLEEP)) {
+							return false;
+						}
+						if (id < otherPheromone.getRobot()) {
 							return false;
 						}
 					}
@@ -219,11 +218,13 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			resPath = new LinkedList<Point>();
 			resPath.add(lastHop);
 			pheromones = new LinkedList<PathPheromone>();
-			pheromones.add(PathPheromoneFactory.build(1, Move.SLEEP, Move.SLEEP, id));
+			pheromones.add(PathPheromoneFactory.build(1, Move.SLEEP,
+					Move.SLEEP, id));
 		} else {
 			resPath = path;
+			resPath.add(resPath.get(resPath.size() - 1));
 			pheromones = getPheromones(resPath);
-		} 
+		}
 		for (int i = 0; i < resPath.size(); i++) {
 			ReservationAntFactory.build(resPath.get(i), pheromones.get(i),
 					simulator, id);
@@ -439,12 +440,14 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			if (otherPheromonesOnPoint != null) {
 				for (PathPheromone otherPheromone : otherPheromonesOnPoint) {
 					if (otherPheromone.getRobot() != id
+							&& otherPheromone.getGoal().equals(Move.SLEEP)) {
+						return null;
+					} else if (otherPheromone.getRobot() != id
 							&& otherPheromone.getTimeStamp() <= step + 1
 							&& otherPheromone.getTimeStamp() >= step - 1) {
 						if (point.equals(pointMuls.get(0).getPoint())) {
 							return null;
-						}
-						if (otherPheromone.getGoal().equals(
+						} else if (otherPheromone.getGoal().equals(
 								pheromone.getOrigin())) { // Head-on collision
 							int robotId = otherPheromone.getRobot();
 							pointMuls = findBacktrackPoint(pointMuls, robotId,
@@ -470,54 +473,56 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	private List<PointMul> findBacktrackPoint(List<PointMul> pointMuls,
 			int otherRobot, int otherTimestamp,
 			List<PathPheromone> pheromoneList, int step) {
-		int waitingTime = 0;
-		Boolean collissionEndFound = false;
-		int i = 0;
-		while (!collissionEndFound) {
-			System.out.println("main loop: " + i);
-			i++;
-			PathPheromone pheromone = pheromoneList.get(step);
-			Point point = getFromPointMulList(pointMuls, step).getPoint();
-			for (PathPheromone otherPheromone : pheromones.get(point)) {
-				if (otherPheromone.getRobot() == otherRobot && otherPheromone.getTimeStamp() == otherTimestamp) {
-					System.out.println("other pheromone: ");
-					if (point.equals(pointMuls.get(0).getPoint())) {
-						return null;
-					} else if (otherPheromone.getGoal().equals(
-							pheromone.getOrigin())) {
-						System.out.println("conflict found");
-						System.out.println("lowering step; old_step = " + step);
-						step--;
-						otherTimestamp++;
-						break;
-					} else if (otherPheromone.getGoal().equals(Move.WAIT)) {
-						System.out.println("wait found");
-						otherTimestamp++;
-						break;
-					} else {
-						System.out.println("collision end found");
-						collissionEndFound = true;
-						waitingTime = otherTimestamp;
-						break;
-					}
-				}
-			}
-			i++;
-		}
-		PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
-		boolean waitingInserted = false;
-		for (PointMul pointMul : pointMuls) {
-			if (waitingInserted) {
-				pointMul.setMul(1);
-			} else if (pointMul.equals(waitingSpot)) {
-				pointMul.setMul(waitingTime + 1);
-				waitingInserted = true;
-			} else {
-				waitingTime -= pointMul.getMul();
-			}
-		}
-		System.out.println(pointMuls);
-		return pointMuls;
+		return null;
+//		int waitingTime = 0;
+//		Boolean collissionEndFound = false;
+//		int i = 0;
+//		while (!collissionEndFound) {
+//			System.out.println("main loop: " + i);
+//			i++;
+//			PathPheromone pheromone = pheromoneList.get(step);
+//			Point point = getFromPointMulList(pointMuls, step).getPoint();
+//			for (PathPheromone otherPheromone : pheromones.get(point)) {
+//				if (otherPheromone.getRobot() == otherRobot
+//						&& otherPheromone.getTimeStamp() == otherTimestamp) {
+//					System.out.println("other pheromone: ");
+//					if (point.equals(pointMuls.get(0).getPoint())) {
+//						return null;
+//					} else if (otherPheromone.getGoal().equals(
+//							pheromone.getOrigin())) {
+//						System.out.println("conflict found");
+//						System.out.println("lowering step; old_step = " + step);
+//						step--;
+//						otherTimestamp++;
+//						break;
+//					} else if (otherPheromone.getGoal().equals(Move.WAIT)) {
+//						System.out.println("wait found");
+//						otherTimestamp++;
+//						break;
+//					} else {
+//						System.out.println("collision end found");
+//						collissionEndFound = true;
+//						waitingTime = otherTimestamp;
+//						break;
+//					}
+//				}
+//			}
+//			i++;
+//		}
+//		PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
+//		boolean waitingInserted = false;
+//		for (PointMul pointMul : pointMuls) {
+//			if (waitingInserted) {
+//				pointMul.setMul(1);
+//			} else if (pointMul.equals(waitingSpot)) {
+//				pointMul.setMul(waitingTime + 1);
+//				waitingInserted = true;
+//			} else {
+//				waitingTime -= pointMul.getMul();
+//			}
+//		}
+//		System.out.println(pointMuls);
+//		return pointMuls;
 	}
 
 	private static PointMul getFromPointMulList(List<PointMul> pointMuls,
