@@ -110,7 +110,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		if (destination != null) {
 			if (destination.equals(getPosition().get())) {
 				// parcel reached
-				if (!pickedUpParcel) {
+				if (acceptedParcel && !pickedUpParcel) {
 					parcel.pickUp();
 					destination = parcel.getDestination();
 					pickedUpParcel = true;
@@ -138,6 +138,19 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				}
 			} else if (checkedPath) {
 				roadModel.moveTo(this, path.get(1), timeLapse);
+			}
+		} else {
+			List<PathPheromone> phers = pheromones.get(lastHop);
+			boolean reserved = false;
+			for(PathPheromone p: phers) {
+				if (p.getRobot() != id) {
+					reserved = true;
+					break;
+				}
+			}
+			if(reserved) {
+				path = constructListFromPointMuls(getPathToNearestFreeNode());
+				destination = path.getLast();
 			}
 		}
 		sendReservationAnts();
@@ -177,7 +190,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			if (reservationTime != RESERVATION_SPEED) {
 				reservationTime++;
 			} else {
-				checkedPath = checkPath(timeLapse);
+				checkedPath = checkPath();
 				if (checkedPath == false) {
 					path = null;
 				}
@@ -185,7 +198,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		}
 	}
 
-	private Boolean checkPath(TimeLapse timeLapse) {
+	private boolean checkPath() {
 		for (int step = 0; step < path.size(); step++) {
 			Point point = path.get(step);
 			List<PathPheromone> otherPheromonesOnPoint = pheromones.get(point);
@@ -377,7 +390,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			PointTree fromTree, Point to) {
 		Graph<? extends ConnectionData> graph = roadModel.getGraph();
 		int shortestPathLength = Integer.MAX_VALUE;
-		List<PointMul> shortesPath = null;
+		List<PointMul> shortestPath = null;
 		while (true) {
 			PointTree currentNode = nodesToExpand.poll();
 			if (currentNode == null) {
@@ -397,7 +410,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 							possiblelength = getLengthPointMulList(possiblePath);
 						}
 						if (possiblelength < shortestPathLength) {
-							shortesPath = possiblePath;
+							shortestPath = possiblePath;
 							shortestPathLength = possiblelength;
 						}
 					}
@@ -414,7 +427,54 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			// }
 		}
 		System.out.println(id + ": shortest path length:" + shortestPathLength);
-		return shortesPath;
+		return shortestPath;
+	}
+	
+	private List<PointMul> getPathToNearestFreeNode() {
+		Queue<PointTree> nodesToExpand = new ArrayDeque<PointTree>();
+		PointTree root = new PointTree(lastHop);
+		nodesToExpand.add(root);
+		Graph<? extends ConnectionData> graph = roadModel.getGraph();
+		int shortestPathLength = Integer.MAX_VALUE;
+		List<PointMul> shortestPath = null;
+		while (true) {
+			PointTree currentNode = nodesToExpand.poll();
+			if (currentNode == null) {
+				break;
+			}
+			for (Point nextPoint : graph.getOutgoingConnections(currentNode
+					.getPoint())) {
+				PointTree nextNode = new PointTree(currentNode, nextPoint);
+				if (!containsPoint(currentNode, nextNode.getPoint())) {
+					currentNode.addChild(nextNode);
+					if (pheromones.get(nextPoint) == null || pheromones.get(nextPoint).isEmpty()) {
+						List<PointMul> possiblePath = conflictAvoidance(nextNode);
+						int possiblelength;
+						if (possiblePath == null) {
+							possiblelength = Integer.MAX_VALUE;
+						} else {
+							possiblelength = getLengthPointMulList(possiblePath);
+						}
+						if (possiblelength < shortestPathLength) {
+							shortestPath = possiblePath;
+							shortestPathLength = possiblelength;
+						}
+					}
+					nodesToExpand.add(nextNode);
+				}
+			}
+			if (currentNode.getDepth() == shortestPathLength
+					|| currentNode.getDepth() > MAX_SEARCH_DEPTH) {
+				break;
+			}
+			// if (currentNode.getDepth() != searchDepth) {
+			// searchDepth = currentNode.getDepth();
+			// System.out.println(id + ": searchdepth - " + searchDepth);
+			// }
+		}
+		System.out.println(id + ": shortest path length to free node:" + shortestPathLength);
+		return shortestPath;
+		
 	}
 
 	private static boolean containsPoint(PointTree tree, Point point) {
