@@ -37,7 +37,7 @@ public class PathPheromone extends Pheromone{
 	
 	@Override
 	public String toString(){
-		String s = "Pheromone <" +  timeStamp + " ; " +  origin + " ; " + goal + ">";
+		String s = "Pheromone <" +  timeStamp + " ; " +  origin + " ; " + goal + " ; " + getRobot() + ">";
 		return s;
 	}
 }
