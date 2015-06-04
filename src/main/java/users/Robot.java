@@ -214,23 +214,20 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	private void sendReservationAnts() {
 		List<Point> resPath;
+		List<PathPheromone> pheromones;
 		if (path == null) {
 			resPath = new LinkedList<Point>();
-			for (int i = 0; i < 30; i++) {
-				resPath.add(lastHop);
-			}
+			resPath.add(lastHop);
+			pheromones = new LinkedList<PathPheromone>();
+			pheromones.add(PathPheromoneFactory.build(1, Move.SLEEP, Move.SLEEP, id));
 		} else {
 			resPath = path;
-			for (int i = path.size(); i < 30; i++) {
-				resPath.add(path.getLast());
-			}
-		}
-		List<PathPheromone> pheromones = getPheromones(resPath);
+			pheromones = getPheromones(resPath);
+		} 
 		for (int i = 0; i < resPath.size(); i++) {
 			ReservationAntFactory.build(resPath.get(i), pheromones.get(i),
 					simulator, id);
 		}
-
 	}
 
 	public List<PathPheromone> getPheromones(List<Point> path) {
@@ -489,6 +486,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					} else if (otherPheromone.getGoal().equals(
 							pheromone.getOrigin())) {
 						System.out.println("conflict found");
+						System.out.println("lowering step; old_step = " + step);
 						step--;
 						otherTimestamp++;
 						break;
@@ -504,6 +502,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					}
 				}
 			}
+			i++;
 		}
 		PointMul waitingSpot = getFromPointMulList(pointMuls, step - 1);
 		boolean waitingInserted = false;
