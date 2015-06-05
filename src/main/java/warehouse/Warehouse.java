@@ -11,7 +11,6 @@ import org.eclipse.swt.graphics.RGB;
 import rendering.HybridWarehouseRenderer;
 import rendering.VirtualUserRenderer;
 import model.road.PheromoneVirtualGraphRoadModel;
-import users.DummyRobot;
 import users.ExplorationAnt;
 import users.Parcel;
 import users.ParcelManager;
@@ -35,11 +34,21 @@ import com.google.common.collect.Table;
 
 public final class Warehouse {
 
-	private static final int N_ROBOTS = 2;
+	// The number of robots that will be placed in the warehouse
+	private static final int N_ROBOTS = 12;
+
+	// The number of parcel that will be spawned in the warehouse
+	public static final int N_PARCELS = 25;
+
+	// The warehouse topology that will be used.
+	// 0 is a small warehouse with 8 vertical corridors that are connected by 2
+	// horizontal corridors.
+	// 1 is a larger warhouse with a small bottleneck in the middle
+	public static final int WAREHOUSE_TOPOLOGY = 1;
+
 	private static final double VEHICLE_LENGTH = 2d;
 	public static final String EXPERIMENT_TAG = "simple_2_ta";
 	public static final int EXP_ITERATION = 6;
-	public static final int N_PARCELS = 25;
 
 	private Warehouse() {
 	}
@@ -50,7 +59,12 @@ public final class Warehouse {
 	 */
 	public static void main(String[] args) {
 
-		ListenableGraph<LengthData> g = createSimpleBiGraph();
+		ListenableGraph<LengthData> g;
+		if (WAREHOUSE_TOPOLOGY == 0) {
+			g = createSimpleBiGraph();
+		} else if (WAREHOUSE_TOPOLOGY == 1) {
+			g = createGraph();
+		}
 		PheromoneVirtualGraphRoadModel pheromoneVirtualModel = new PheromoneVirtualGraphRoadModel(
 				g);
 
@@ -61,19 +75,20 @@ public final class Warehouse {
 								.setVehicleLength(VEHICLE_LENGTH).build())
 				.addModel(CommModel.builder().build())
 				.addModel(pheromoneVirtualModel).build();
-		
+
 		Random rand = new Random();
 		sim.getRandomGenerator().setSeed(rand.nextInt());
 		HashSet<Point> robotPos = new HashSet<Point>();
-		
+
 		for (int i = 0; i < N_ROBOTS; i++) {
 			Point start;
 			do {
-				start = pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator());
+				start = pheromoneVirtualModel.getRandomPosition(sim
+						.getRandomGenerator());
 			} while (robotPos.contains(start));
 			robotPos.add(start);
 			sim.register(new Robot(i, start, N_ROBOTS));
-//			sim.register(new DummyRobot(i, start));
+			// sim.register(new DummyRobot(i, start));
 		}
 
 		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim
@@ -171,8 +186,9 @@ public final class Warehouse {
 		for (final Map<Integer, Point> column : matrix.columnMap().values()) {
 			Graphs.addBiPath(g, column.values());
 		}
-		Graphs.addBiPath(g, matrix.row(4).values());
+		Graphs.addBiPath(g, matrix.row(0).values());
 		Graphs.addBiPath(g, matrix.row(5).values());
+		Graphs.addBiPath(g, matrix.row(9).values());
 
 		final Table<Integer, Integer, Point> matrix2 = createMatrix(10, 7,
 				new Point(20, 8));
