@@ -35,7 +35,7 @@ import com.google.common.collect.Table;
 public final class Warehouse {
 
 	// The number of robots that will be placed in the warehouse
-	private static final int N_ROBOTS = 12;
+	private static final int N_ROBOTS = 8;
 
 	// The number of parcel that will be spawned in the warehouse
 	public static final int N_PARCELS = 25;
@@ -44,7 +44,7 @@ public final class Warehouse {
 	// 0 is a small warehouse with 8 vertical corridors that are connected by 2
 	// horizontal corridors.
 	// 1 is a larger warhouse with a small bottleneck in the middle
-	public static final int WAREHOUSE_TOPOLOGY = 1;
+	public static final int WAREHOUSE_TOPOLOGY = 0;
 
 	private static final double VEHICLE_LENGTH = 2d;
 	public static final String EXPERIMENT_TAG = "simple_2_ta";

@@ -151,7 +151,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private void logParcelDelivery(long time) {
-		String s = Warehouse.EXPERIMENT_TAG + ";" + id + ";" + time / 1000 + "\n";
+		/*String s = Warehouse.EXPERIMENT_TAG + ";" + id + ";" + time / 1000 + "\n";
 		byte data[] = s.getBytes();
 		Path p = Paths.get("logs/" + Warehouse.EXPERIMENT_TAG + "_" + Warehouse.EXP_ITERATION + ".parcels");
 		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
@@ -160,12 +160,12 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			out.close();
 		} catch (IOException x) {
 			System.err.println(x);
-		}
+		}*/
 	}
 
 	private void logDistanceTraveled(long time, Double distance,
 			boolean deliveringPacket) {
-		String s = Warehouse.EXPERIMENT_TAG + ";" + id + ";" + time / 1000 + ";" + distance + ";"
+		/*String s = Warehouse.EXPERIMENT_TAG + ";" + id + ";" + time / 1000 + ";" + distance + ";"
 				+ (deliveringPacket ? 1 : 2) + "\n";
 		byte data[] = s.getBytes();
 		Path p = Paths.get("logs/" + Warehouse.EXPERIMENT_TAG + "_" + Warehouse.EXP_ITERATION + ".distances");
@@ -175,7 +175,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			out.close();
 		} catch (IOException x) {
 			System.err.println(x);
-		}
+		}*/
 	}
 
 	@Override
