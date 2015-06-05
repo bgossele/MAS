@@ -35,8 +35,11 @@ import com.google.common.collect.Table;
 
 public final class Warehouse {
 
-	private static final int N_ROBOTS = 12;
+	private static final int N_ROBOTS = 2;
 	private static final double VEHICLE_LENGTH = 2d;
+	public static final String EXPERIMENT_TAG = "simple_2_ta";
+	public static final int EXP_ITERATION = 6;
+	public static final int N_PARCELS = 25;
 
 	private Warehouse() {
 	}

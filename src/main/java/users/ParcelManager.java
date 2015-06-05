@@ -4,6 +4,8 @@ import model.road.VirtualGraphRoadModel;
 
 import org.apache.commons.math3.random.RandomGenerator;
 
+import warehouse.Warehouse;
+
 import com.github.rinde.rinsim.core.Simulator;
 import com.github.rinde.rinsim.core.SimulatorAPI;
 import com.github.rinde.rinsim.core.TickListener;
@@ -26,7 +28,7 @@ public class ParcelManager implements TickListener {
 
 	@Override
 	public void tick(TimeLapse timeLapse) {
-		if (parcelCounter <= 25) {
+		if (parcelCounter <= Warehouse.N_PARCELS) {
 			while ((rng.nextInt() % 67) == 0) {
 				Point start = model.getRandomPosition(rng);
 				Point destination;

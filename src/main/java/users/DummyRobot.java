@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 
+import warehouse.Warehouse;
+
 import com.github.rinde.rinsim.core.TickListener;
 import com.github.rinde.rinsim.core.TimeLapse;
 import com.github.rinde.rinsim.core.model.comm.CommDevice;
@@ -108,7 +110,7 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser {
 						lastHop = mp.travelledNodes().get(
 								mp.travelledNodes().size() - 1);
 						logDistanceTraveled(timeLapse.getTime(), mp.distance()
-								.getValue(), 1);
+								.getValue(), true);
 					}
 				} else {
 					print(id + ": road block; waiting on "
@@ -156,9 +158,9 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser {
 	}
 
 	private void logParcelDelivery(long time) {
-		String s = id + ":" + time / 1000 + "\n";
+		String s = Warehouse.EXPERIMENT_TAG + ";" + Warehouse.N_PARCELS + ";" + id + ";" + time / 1000 + "\n";
 		byte data[] = s.getBytes();
-		Path p = Paths.get("parcel_delivery_log.txt");
+		Path p = Paths.get("logs/" + Warehouse.EXPERIMENT_TAG + "_" + Warehouse.EXP_ITERATION + ".parcels");
 		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
 				p, CREATE, APPEND))) {
 			out.write(data, 0, data.length);
@@ -168,12 +170,12 @@ public class DummyRobot implements TickListener, MovingRoadUser, CommUser {
 		}
 	}
 
-	private void logDistanceTraveled(long time, double distance,
-			int deliveringPacket) {
-		String s = id + ":" + time / 1000 + ";" + distance + ";"
-				+ deliveringPacket + "\n";
+	private void logDistanceTraveled(long time, Double distance,
+			boolean deliveringPacket) {
+		String s = Warehouse.EXPERIMENT_TAG + ";" + id + ";" + time / 1000 + ";" + distance + ";"
+				+ (deliveringPacket ? 1 : 2) + "\n";
 		byte data[] = s.getBytes();
-		Path p = Paths.get("distance_traveled_log.txt");
+		Path p = Paths.get("logs/" + Warehouse.EXPERIMENT_TAG + "_" + Warehouse.EXP_ITERATION + ".distances");
 		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
 				p, CREATE, APPEND))) {
 			out.write(data, 0, data.length);

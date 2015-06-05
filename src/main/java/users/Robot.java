@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import warehouse.Warehouse;
 import model.road.Move;
 import model.road.PathPheromone;
 import model.road.PathPheromoneFactory;
@@ -116,7 +117,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					destination = parcel.getDestination();
 					pickedUpParcel = true;
 					path = null;
-//					logDistanceTraveled(timeLapse.getTime(), lastHop, getPosition().get(), true);
 					lastHop = getPosition().get();
 					System.out.println(id + ": Pickup - " + lastHop);
 				} else if (pickedUpParcel) {
@@ -126,7 +126,6 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					pickedUpParcel = false;
 					acceptedParcel = false;
 					path = null;
-//					logDistanceTraveled(timeLapse.getTime(), lastHop, getPosition().get(), true);
 					lastHop = getPosition().get();
 					System.out.println(id + ": Deliver - " + lastHop);
 					logParcelDelivery(timeLapse.getTime());
@@ -152,9 +151,9 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 	}
 
 	private void logParcelDelivery(long time) {
-		String s = id + ":" + time / 1000 + "\n";
+		String s = Warehouse.EXPERIMENT_TAG + ";" + id + ";" + time / 1000 + "\n";
 		byte data[] = s.getBytes();
-		Path p = Paths.get("parcel_delivery_log.txt");
+		Path p = Paths.get("logs/" + Warehouse.EXPERIMENT_TAG + "_" + Warehouse.EXP_ITERATION + ".parcels");
 		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
 				p, CREATE, APPEND))) {
 			out.write(data, 0, data.length);
@@ -166,10 +165,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 
 	private void logDistanceTraveled(long time, Double distance,
 			boolean deliveringPacket) {
-		String s = id + ":" + time / 1000 + ";" + distance + ";"
+		String s = Warehouse.EXPERIMENT_TAG + ";" + id + ";" + time / 1000 + ";" + distance + ";"
 				+ (deliveringPacket ? 1 : 2) + "\n";
 		byte data[] = s.getBytes();
-		Path p = Paths.get("distance_traveled_log.txt");
+		Path p = Paths.get("logs/" + Warehouse.EXPERIMENT_TAG + "_" + Warehouse.EXP_ITERATION + ".distances");
 		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
 				p, CREATE, APPEND))) {
 			out.write(data, 0, data.length);

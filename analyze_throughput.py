@@ -1,21 +1,34 @@
 #!/usr/bin/python
 
 from numpy import std, mean
+from os import listdir
+from os.path import isfile, join
 
-parcels_per_robot = {}
-parcel_times = []
+throughputs = {}
 
-with open("parcel_delivery_log.txt",'r') as log:
-	for line in log:
-		(robotId, arrival_time) = line.split(':')
-		parcel_times.append(int(arrival_time))
-		if not robotId in parcels_per_robot.keys():
-			parcels_per_robot[robotId] = 1
+files = [f for f in listdir('logs') if f.endswith('.parcels')]
+
+for f in files:
+	with open(join('logs', f),'r') as log:
+		parcel_times = []
+		tag = ''
+		for line in log:
+			if 'dummy' in f:
+				(tag, n_parcels, robotId, arrival_time) = line.split(';')
+			else:
+				(tag, robotId, arrival_time) = line.split(';')
+			parcel_times.append(int(arrival_time))
+		try:
+			throughput = 60 * float(len(parcel_times)) / (max(parcel_times))	
+			if 'dummy' in f:
+				throughput *= (len(parcel_times) / float(n_parcels))
+		except ValueError:
+			throughput = 0
+
+		if not tag in throughputs.keys():
+			throughputs[tag] = [throughput]
 		else:
-			parcels_per_robot[robotId] += 1
+			throughputs[tag].append(throughput)
 
-
-for robot in sorted(parcels_per_robot.keys()):
-	print "%s\t%d" % (robot, parcels_per_robot[robot])
-
-print "%d parcels in %d s. Throughput = %s parcels/min" % (len(parcel_times), max(parcel_times), 60 * float(len(parcel_times)) / (max(parcel_times)))
+for exp in throughputs.keys():
+	print "%s\t%.2f ; %.2f" % (exp, mean(throughputs[exp]), std(throughputs[exp]))
