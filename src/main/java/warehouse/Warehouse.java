@@ -2,13 +2,16 @@ package warehouse;
 
 import static com.google.common.collect.Lists.newArrayList;
 
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 
 import org.eclipse.swt.graphics.RGB;
 
 import rendering.HybridWarehouseRenderer;
 import rendering.VirtualUserRenderer;
 import model.road.PheromoneVirtualGraphRoadModel;
+import users.DummyRobot;
 import users.ExplorationAnt;
 import users.Parcel;
 import users.ParcelManager;
@@ -55,12 +58,19 @@ public final class Warehouse {
 								.setVehicleLength(VEHICLE_LENGTH).build())
 				.addModel(CommModel.builder().build())
 				.addModel(pheromoneVirtualModel).build();
-
+		
+		Random rand = new Random();
+		sim.getRandomGenerator().setSeed(rand.nextInt());
+		HashSet<Point> robotPos = new HashSet<Point>();
+		
 		for (int i = 0; i < N_ROBOTS; i++) {
-			sim.register(new Robot(i, pheromoneVirtualModel
-					.getRandomPosition(sim.getRandomGenerator()), N_ROBOTS));
-			// sim.register(new DummyRobot(i,
-			// pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator())));
+			Point start;
+			do {
+				start = pheromoneVirtualModel.getRandomPosition(sim.getRandomGenerator());
+			} while (robotPos.contains(start));
+			robotPos.add(start);
+			sim.register(new Robot(i, start, N_ROBOTS));
+//			sim.register(new DummyRobot(i, start));
 		}
 
 		sim.addTickListener(new ParcelManager(pheromoneVirtualModel, sim
