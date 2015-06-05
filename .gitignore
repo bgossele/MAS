@@ -1,6 +1,6 @@
 *.class
 parcel_delivery_log.txt
-
+distance_traveled_log.txt
 
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/

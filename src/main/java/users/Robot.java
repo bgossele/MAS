@@ -34,6 +34,7 @@ import com.github.rinde.rinsim.core.model.comm.CommUser;
 import com.github.rinde.rinsim.core.model.comm.Message;
 import com.github.rinde.rinsim.core.model.comm.MessageContents;
 import com.github.rinde.rinsim.core.model.road.CollisionGraphRoadModel;
+import com.github.rinde.rinsim.core.model.road.MoveProgress;
 import com.github.rinde.rinsim.core.model.road.MovingRoadUser;
 import com.github.rinde.rinsim.core.model.road.RoadModel;
 import com.github.rinde.rinsim.geom.ConnectionData;
@@ -115,6 +116,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					destination = parcel.getDestination();
 					pickedUpParcel = true;
 					path = null;
+//					logDistanceTraveled(timeLapse.getTime(), lastHop, getPosition().get(), true);
 					lastHop = getPosition().get();
 					System.out.println(id + ": Pickup - " + lastHop);
 				} else if (pickedUpParcel) {
@@ -124,6 +126,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					pickedUpParcel = false;
 					acceptedParcel = false;
 					path = null;
+//					logDistanceTraveled(timeLapse.getTime(), lastHop, getPosition().get(), true);
 					lastHop = getPosition().get();
 					System.out.println(id + ": Deliver - " + lastHop);
 					logParcelDelivery(timeLapse.getTime());
@@ -141,7 +144,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 					// System.out.println(id + ": Hop reached - " + lastHop);
 				}
 			} else if (checkedPath) {
-				roadModel.moveTo(this, path.get(1), timeLapse);
+				MoveProgress mp = roadModel.moveTo(this, path.get(1), timeLapse);
+				logDistanceTraveled(timeLapse.getTime(), mp.distance().getValue(), acceptedParcel);
 			}
 		}
 		sendReservationAnts();
@@ -160,10 +164,10 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		}
 	}
 
-	private void logDistanceTraveled(long time, double distance,
-			int deliveringPacket) {
+	private void logDistanceTraveled(long time, Double distance,
+			boolean deliveringPacket) {
 		String s = id + ":" + time / 1000 + ";" + distance + ";"
-				+ deliveringPacket + "\n";
+				+ (deliveringPacket ? 1 : 2) + "\n";
 		byte data[] = s.getBytes();
 		Path p = Paths.get("distance_traveled_log.txt");
 		try (OutputStream out = new BufferedOutputStream(Files.newOutputStream(
@@ -225,7 +229,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 				System.out.println(id + ": moving out of the way");
 				checkedPath = false;
 				reservationTime = 0;
-				LinkedList<Point> posPath = getPathToFreeNeigbor();
+				LinkedList<Point> posPath = getPathToFreeNeighbour();
 				if (posPath != null) {
 					path = posPath;
 					destination = path.getLast();
@@ -462,8 +466,8 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 		return shortestPath;
 	}
 
-	private LinkedList<Point> getPathToFreeNeigbor() {
-		System.out.println(id + ": getPathToFreeNeigbor");
+	private LinkedList<Point> getPathToFreeNeighbour() {
+		System.out.println(id + ": getPathToFreeNeighbour");
 		Graph<? extends ConnectionData> graph = roadModel.getGraph();
 		int biggestMinTimeStamp = Integer.MAX_VALUE;
 		// initiating biggestMinTimeStamp with the value on the current node.
@@ -507,7 +511,7 @@ public class Robot implements TickListener, MovingRoadUser, CommUser,
 			System.out.println("neighbor biggestMinTimeStamp: "
 					+ possibleBiggestMinTimeStamp);
 			if (possibleBiggestMinTimeStamp > biggestMinTimeStamp) {
-				System.out.println("found better neigbor");
+				System.out.println("found better neighbour");
 				LinkedList<Point> posResult = getShortestPathTo(getPosition()
 						.get(), nextPoint);
 				if (posResult != null) {
